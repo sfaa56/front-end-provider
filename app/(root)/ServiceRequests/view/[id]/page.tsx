@@ -6,6 +6,17 @@ import { FiChevronRight } from "react-icons/fi";
 import { FaBriefcase } from "react-icons/fa";
 import { FiEdit, FiTrash2, FiMessageCircle } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Page() {
   const commentRef = useRef<HTMLTextAreaElement>(null);
@@ -210,6 +221,10 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
             <span className="hidden sm:inline">Comment</span>
           </Button>
 
+    
+
+       <AlertDialog>
+            <AlertDialogTrigger asChild>
           <Button
             className=" flex items-center gap-1 px-4 py-2 rounded bg-red-100 text-red-600 hover:bg-red-200 transition"
             title="Delete"
@@ -217,6 +232,45 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
             <FiTrash2 />
             <span className="hidden sm:inline">Delete</span>
           </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white">
+              <AlertDialogHeader className="flex flex-col items-center">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-2">
+                  <FiTrash2 className="text-2xl text-red-500" />
+                </div>
+                <AlertDialogTitle className="text-lg font-bold text-red-600">
+                  Delete Request
+                </AlertDialogTitle>
+              </AlertDialogHeader>
+              <AlertDialogDescription className="text-center text-gray-600 mb-4">
+                Are you sure you want to{" "}
+                <span className="font-semibold text-red-500">delete</span> Request{" "}
+                <span className="font-semibold">Requst</span>?<br />
+                This action cannot be undone.
+              </AlertDialogDescription>
+              <AlertDialogFooter className="flex justify-center gap-2">
+                <AlertDialogCancel
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700"
+                >
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(event) => {
+                    event.stopPropagation();
+    
+                  }}
+                  className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+
         </div>
       </div>
 
