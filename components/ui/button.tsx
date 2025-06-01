@@ -22,9 +22,11 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         signIn:"w-full bg-tertiary hover:bg-tertiary/90 text-white  text-[14px]",
         sidebar:"w-full flex items-center justtify-start gap-3 hover:bg-gray-100  hover:scale-105 transition-all duration-200",
+        submit:" rounded bg-secondary text-white hover:bg-secondary/90",
+        cancel:"px-4 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-150"
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        default: "h-8 px-4 py-1 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",

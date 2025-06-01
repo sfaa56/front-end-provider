@@ -11,6 +11,7 @@ export default function Page() {
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const request = {
+    assignedProvider: "Provider One",
     cost: "500$",
     status: "In Progress",
     postDate: "4 days ago",
@@ -313,25 +314,25 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
             </div>
             {isEditingInfo && (
               <div className="flex gap-2 mt-4">
-                <button
-                  className="px-4 py-1 rounded bg-secondary text-white"
-                  onClick={handleSaveInfo}
-                >
+                <Button variant={"submit"} onClick={handleSaveInfo}>
                   Save
-                </button>
-                <button
-                  className="px-4 py-1 rounded bg-gray-200 text-gray-700"
-                  onClick={handleCancelInfo}
-                >
+                </Button>
+                <Button variant={"cancel"} onClick={handleCancelInfo}>
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           {/* Client Details */}
           <div className="bg-white rounded-sm shadow p-4">
-            <h2 className="text-base font-medium  ">Client Details</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium">Client Details</h2>
+              <button className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-10">
+                View
+              </button>
+            </div>
+
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
 
             <div className="space-y-3 text-sm">
@@ -372,7 +373,9 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
               className="w-full min-h-[255px] border rounded p-2 focus:outline-none focus:ring-2 focus:ring-secondary"
               placeholder="Write your comment here..."
             />
-            <Button className="mt-2 bg-secondary text-white">Send</Button>
+            <Button variant={"submit"} className="mt-2">
+              Send
+            </Button>
           </div>
         </div>
 
@@ -401,18 +404,12 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
                   className="w-full min-h-[120px] border rounded p-2 mb-2"
                 />
                 <div className="flex gap-2">
-                  <button
-                    className="px-4 py-1 rounded bg-secondary text-white"
-                    onClick={handleSaveDetails}
-                  >
+                  <Button variant={"submit"} onClick={handleSaveDetails}>
                     Save
-                  </button>
-                  <button
-                    className="px-4 py-1 rounded bg-gray-200 text-gray-700"
-                    onClick={handleCancelDetails}
-                  >
+                  </Button>
+                  <Button variant={"cancel"} onClick={handleCancelDetails}>
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -435,60 +432,54 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
             </div>
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
             {isEditingAttachments ? (
-   <div>
-    <ul className="list-disc pl-5 space-y-1 mb-2">
-      {editAttachments.map((att, idx) => (
-        <li key={idx} className="flex items-center gap-2">
-          <a
-            href={att.url}
-            className="text-blue-600 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {att.name}
-          </a>
-          <button
-            className="text-xs text-red-500 hover:underline"
-            onClick={() => handleRemoveAttachment(idx)}
-            type="button"
-          >
-            Remove
-          </button>
-        </li>
-      ))}
-    </ul>
-    {/* Styled file input */}
-    <div className="mb-2">
-      <input
-        id="file-upload"
-        type="file"
-        multiple
-        onChange={handleAddAttachment}
-        className="hidden"
-      />
-      <label
-        htmlFor="file-upload"
-        className="inline-flex items-center px-4 py-2 bg-secondary text-white rounded cursor-pointer hover:bg-secondary/90 transition"
-      >
-        <FiUpload className="mr-2" />
-        Add Files
-      </label>
-    </div>
-    <div className="flex gap-2">
-      <button
-        className="px-4 py-1 rounded bg-secondary text-white"
-        onClick={handleSaveAttachments}
-      >
-        Save
-      </button>
-      <button
-        className="px-4 py-1 rounded bg-gray-200 text-gray-700"
-        onClick={handleCancelAttachments}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
+              <div>
+                <ul className="list-disc pl-5 space-y-1 mb-2">
+                  {editAttachments.map((att, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      <a
+                        href={att.url}
+                        className="text-blue-600 hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {att.name}
+                      </a>
+                      <button
+                        className="text-xs text-red-500 hover:underline"
+                        onClick={() => handleRemoveAttachment(idx)}
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {/* Styled file input */}
+                <div className="mb-6">
+                  <input
+                    id="file-upload"
+                    type="file"
+                    multiple
+                    onChange={handleAddAttachment}
+                    className="hidden"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <label
+                    htmlFor="file-upload"
+                    className="px-4 py-1 rounded bg-secondary text-white flex items-center text-sm hover:bg-secondary/90 hover:cursor-pointer"
+                  >
+                    <FiUpload className="mr-2 text-sm" />
+                    Add Files
+                  </label>
+                  <Button variant={"submit"} onClick={handleSaveAttachments}>
+                    Save
+                  </Button>
+                  <Button variant={"cancel"} onClick={handleCancelAttachments}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             ) : (
               <ul className="list-disc pl-5 space-y-1">
                 {request.attachments.map((att, idx) => (
@@ -513,51 +504,63 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
 
             <ul className="space-y-4">
-              {offers.map((offer, idx) => (
-                <li
-                  key={idx}
-                  className="border rounded p-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 bg-gray-50  "
-                >
-                  <div className="flex flex-col">
-                    {/* Left: Provider Info */}
-                    <div className="flex items-center  gap-4 min-w-[220px]">
-                      <img
-                        src={offer.avatar}
-                        alt={offer.provider}
-                        className="w-12 h-12 rounded-full object-cover border"
-                      />
-                      <div>
-                        <div className="font-semibold text-gray-800 flex items-center gap-2 ">
-                          <span className="hover:text-secondary hover:cursor-pointer">
-                            {" "}
-                            {offer.provider}
-                          </span>
-                          <span className="flex items-center text-yellow-500 text-xs ml-2 ">
-                            ★ {offer.rating}
-                          </span>
+              {offers.map((offer, idx) => {
+                const isAssigned =
+                  request.status === "In Progress" &&
+                  offer.provider === request.assignedProvider;
+                return (
+                  <li
+                    key={idx}
+                    className={`border rounded p-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 bg-gray-50 ${
+                      isAssigned ? "border-blue-500 bg-blue-50" : ""
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-4 min-w-[220px]">
+                        <img
+                          src={offer.avatar}
+                          alt={offer.provider}
+                          className="w-12 h-12 rounded-full object-cover border"
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-800 flex items-center gap-2">
+                            <span className="hover:text-secondary hover:cursor-pointer">
+                              {offer.provider}
+                            </span>
+                            <span className="flex items-center text-yellow-500 text-xs ml-2">
+                              ★ {offer.rating}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {offer.specialty}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {offer.specialty}
+                      </div>
+
+                      <div className={`flex ${isAssigned?"justify-between":"justify-end "}  items-end gap-1 min-w-[90px]`}>
+                        {isAssigned && (
+                          <span className="ml-2 px-2 py-0.5 rounded bg-blue-500 text-white text-xs">
+                            Working
+                          </span>
+                        )}
+
+                        <div className="flex flex-col  ">
+                          <span className="text-lg font-bold text-secondary">
+                            {offer.price}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {offer.estimateTime}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    {/* Right: Price & Time */}
-                    <div className="flex flex-col items-end gap-1 min-w-[90px]">
-                      <span className="text-lg font-bold text-secondary">
-                        {offer.price}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {offer.estimateTime}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Middle: Offer Message */}
-                  <div className="flex-1 min-w-0 text-gray-600 text-sm break-words">
-                    {offer.message}
-                  </div>
-                </li>
-              ))}
+                    <div className="flex-1 min-w-0 text-gray-600 text-sm break-words">
+                      {offer.message}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
