@@ -34,6 +34,7 @@ const ActionCell = ({ row }: { row: { original: ServiceRequest } }) => {
 
   return (
     <div className="flex  gap-2 justify-center">
+      <Link href={`/ServiceRequests/view/2`}>
       <button
         title="View"
         className="p-2 rounded hover:bg-gray-100 text-blue-600"
@@ -42,7 +43,7 @@ const ActionCell = ({ row }: { row: { original: ServiceRequest } }) => {
         }}
       >
         <FiEye />
-      </button>
+      </button></Link>
 
       <Link href={`/requests/edit/${request._id}`}>
         <button
