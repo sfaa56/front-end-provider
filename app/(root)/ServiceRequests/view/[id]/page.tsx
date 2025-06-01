@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import React, { useRef } from "react";
+import { FiUpload } from "react-icons/fi";
+import React, { useRef, useState } from "react";
 import { FiChevronRight } from "react-icons/fi";
 import { FaBriefcase } from "react-icons/fa";
 import { FiEdit, FiTrash2, FiMessageCircle } from "react-icons/fi";
@@ -9,21 +10,8 @@ import { Button } from "@/components/ui/button";
 export default function Page() {
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
-  commentRef.current?.scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-  });
-  commentRef.current?.focus();
-
-  // Mock data (replace with real data/fetch)
-  const client = {
-    name: "Ahmed Ali",
-    registerDate: "2023-01-15",
-    city: "Cairo",
-    email: "ahmed.ali@email.com",
-  };
-
   const request = {
+    cost: "500$",
     status: "In Progress",
     postDate: "4 days ago",
     estimateTime: "3 days",
@@ -43,6 +31,98 @@ export default function Page() {
       },
       { provider: "Provider Two", price: "$45", message: "Available today." },
     ],
+  };
+
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isEditingAttachments, setIsEditingAttachments] = useState(false);
+
+  const [editAttachments, setEditAttachments] = useState([
+    ...request.attachments,
+  ]);
+
+  const [editInfo, setEditInfo] = useState({
+    status: request.status,
+    postDate: request.postDate,
+    estimateTime: request.estimateTime,
+    cost: request.cost,
+    specialty: request.specialty,
+  });
+
+  const [editDetails, setEditDetails] = useState({
+    description: request.description,
+  });
+
+  // Handlers for Info section
+  const handleEditInfoChange = (e: any) => {
+    const { name, value } = e.target;
+    setEditInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveInfo = () => {
+    Object.assign(request, editInfo);
+    setIsEditingInfo(false);
+  };
+
+  const handleCancelInfo = () => {
+    setEditInfo({
+      status: request.status,
+      postDate: request.postDate,
+      estimateTime: request.estimateTime,
+      cost: request.cost,
+      specialty: request.specialty,
+    });
+    setIsEditingInfo(false);
+  };
+
+  // Handlers for Details section
+  const handleEditDetailsChange = (e: any) => {
+    const { name, value } = e.target;
+    setEditDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveDetails = () => {
+    request.description = editDetails.description;
+    setIsEditingDetails(false);
+  };
+
+  const handleCancelDetails = () => {
+    setEditDetails({ description: request.description });
+    setIsEditingDetails(false);
+  };
+
+  const handleAddAttachment = (e: any) => {
+    const files = Array.from(e.target.files) as File[];
+    setEditAttachments((prev) => [
+      ...prev,
+      ...files.map((file) => ({
+        name: file.name,
+        url: URL.createObjectURL(file),
+        file,
+      })),
+    ]);
+  };
+
+  const handleRemoveAttachment = (idx: any) => {
+    setEditAttachments((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSaveAttachments = () => {
+    request.attachments = editAttachments;
+    setIsEditingAttachments(false);
+  };
+
+  const handleCancelAttachments = () => {
+    setEditAttachments([...request.attachments]);
+    setIsEditingAttachments(false);
+  };
+
+  // Mock data (replace with real data/fetch)
+  const client = {
+    name: "Ahmed Ali",
+    registerDate: "2023-01-15",
+    city: "Cairo",
+    email: "ahmed.ali@email.com",
   };
 
   const offers = [
@@ -106,6 +186,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
         <span className=" t">View</span>
       </nav>
 
+      {/* title and buttons */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6  ">
         {/* Left: Request Title */}
         <h1 className="text-xl font-semibold text-gray-800 mb-2 md:mb-0">
@@ -129,14 +210,6 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
           </Button>
 
           <Button
-            className="flex items-center gap-1 px-4 py-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
-            title="Update"
-          >
-            <FiEdit />
-            <span className="hidden sm:inline">Update</span>
-          </Button>
-
-          <Button
             className=" flex items-center gap-1 px-4 py-2 rounded bg-red-100 text-red-600 hover:bg-red-200 transition"
             title="Delete"
           >
@@ -151,21 +224,75 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
         <div className="md:w-1/3 w-full space-y-5">
           {/* Service Request Info */}
           <div className="bg-white rounded-sm shadow p-4">
-            <h2 className="text-base font-medium ">Request Info</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium">Request Info</h2>
+              {!isEditingInfo && (
+                <button
+                  className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-10"
+                  onClick={() => setIsEditingInfo(true)}
+                >
+                  Update
+                </button>
+              )}
+            </div>
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3 mb-4"></div>
 
             <div className="flex gap-[146px] text-sm">
-              <div className="flex gap-2 flex-col">
-                <span className="font-medium  mb-2">Status </span>
-                <span className="font-medium ">Post Date </span>
-                <span className="font-medium ">Estima</span>
+              <div
+                className={`${
+                  isEditingInfo ? "gap-4" : "gap-2"
+                } flex  flex-col`}
+              >
+                <span className="font-medium mb-2">Status </span>
+                <span className="font-medium">Post Date </span>
+                <span className="font-medium">Estimate</span>
                 <span>Cost</span>
-                <span className="font-medium ">Specialty </span>
+                <span className="font-medium">Specialty </span>
               </div>
 
               <div className="flex gap-2 flex-col">
-                <span
-                  className={`px-2 py-1 mb-2 rounded-full text-xs font-semibold
+                {isEditingInfo ? (
+                  <>
+                    <select
+                      name="status"
+                      value={editInfo.status}
+                      onChange={handleEditInfoChange}
+                      className="px-2 py-1 rounded border"
+                    >
+                      <option value="Completed">Completed</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Waiting">Waiting</option>
+                    </select>
+                    <input
+                      name="postDate"
+                      value={editInfo.postDate}
+                      onChange={handleEditInfoChange}
+                      className="px-2 py-1 rounded border"
+                    />
+                    <input
+                      name="estimateTime"
+                      value={editInfo.estimateTime}
+                      onChange={handleEditInfoChange}
+                      className="px-2 py-1 rounded border"
+                    />
+                    <input
+                      name="cost"
+                      value={editInfo.cost || ""}
+                      onChange={handleEditInfoChange}
+                      className="px-2 py-1 rounded border"
+                      placeholder="Cost"
+                    />
+                    <input
+                      name="specialty"
+                      value={editInfo.specialty}
+                      onChange={handleEditInfoChange}
+                      className="px-2 py-1 rounded border"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <span
+                      className={`px-2 py-1 mb-2 rounded-full text-xs font-semibold
                 ${
                   request.status === "Completed"
                     ? "bg-green-100 text-green-700"
@@ -173,18 +300,35 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
                     ? "bg-blue-100 text-blue-700"
                     : "bg-yellow-100 text-yellow-700"
                 }`}
-                >
-                  {request.status}
-                </span>
-
-                <span> {request.postDate}</span>
-
-                <span>{request.estimateTime}</span>
-                <span>500$ - 250$</span>
-                <span>{request.specialty}</span>
+                    >
+                      {request.status}
+                    </span>
+                    <span>{request.postDate}</span>
+                    <span>{request.estimateTime}</span>
+                    <span>{request.cost}</span>
+                    <span>{request.specialty}</span>
+                  </>
+                )}
               </div>
             </div>
+            {isEditingInfo && (
+              <div className="flex gap-2 mt-4">
+                <button
+                  className="px-4 py-1 rounded bg-secondary text-white"
+                  onClick={handleSaveInfo}
+                >
+                  Save
+                </button>
+                <button
+                  className="px-4 py-1 rounded bg-gray-200 text-gray-700"
+                  onClick={handleCancelInfo}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
+
           {/* Client Details */}
           <div className="bg-white rounded-sm shadow p-4">
             <h2 className="text-base font-medium  ">Client Details</h2>
@@ -236,44 +380,131 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
         <div className="md:w-2/3 w-full space-y-5">
           {/* Request Details */}
           <div className="bg-white rounded-sm shadow p-4">
-            <h2 className="text-base font-medium  ">Request Details</h2>
-            <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
-
-            <div className="mb-2">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex a
-              odio culpa saepe, tempora excepturi sit nobis repellat,
-              perspiciatis totam eligendi architecto dolorum minus dolor maxime
-              est nihil sapiente magni! Lorem ipsum dolor sit amet consectetur
-              adipisicing elit. Molestias libero, veritatis laborum consequuntur
-              nulla mollitia illo numquam asperiores ratione voluptate enim
-              officiis nostrum? Praesentium veritatis repellendus amet
-              architecto pariatur consectetur? Lorem ipsum, dolor sit amet
-              consectetur adipisicing elit. Blanditiis, facilis optio? Libero
-              eius molestiae modi numquam recusandae accusantium non explicabo
-              saepe consequuntur amet, labore officiis laudantium placeat sit.
-              Voluptate, explicabo?
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium">Request Details</h2>
+              {!isEditingDetails && (
+                <button
+                  className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-10"
+                  onClick={() => setIsEditingDetails(true)}
+                >
+                  Update
+                </button>
+              )}
             </div>
+            <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
+            {isEditingDetails ? (
+              <div>
+                <textarea
+                  name="description"
+                  value={editDetails.description}
+                  onChange={handleEditDetailsChange}
+                  className="w-full min-h-[120px] border rounded p-2 mb-2"
+                />
+                <div className="flex gap-2">
+                  <button
+                    className="px-4 py-1 rounded bg-secondary text-white"
+                    onClick={handleSaveDetails}
+                  >
+                    Save
+                  </button>
+                  <button
+                    className="px-4 py-1 rounded bg-gray-200 text-gray-700"
+                    onClick={handleCancelDetails}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-2">{request.description}</div>
+            )}
           </div>
 
           {/* Attachments */}
           <div className="bg-white rounded-sm shadow p-4">
-            <h2 className="text-base font-medium">Attachments</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium">Attachments</h2>
+              {!isEditingAttachments && (
+                <button
+                  className="text-xs px-2 py-1 rounded text-secondary border transition shadow hover:bg-secondary hover:bg-opacity-10"
+                  onClick={() => setIsEditingAttachments(true)}
+                >
+                  Update
+                </button>
+              )}
+            </div>
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
-
-            <ul className="list-disc pl-5 space-y-1">
-              {request.attachments.map((att, idx) => (
-                <li key={idx}>
-                  <a
-                    href={att.url}
-                    className="text-blue-600 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {att.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {isEditingAttachments ? (
+   <div>
+    <ul className="list-disc pl-5 space-y-1 mb-2">
+      {editAttachments.map((att, idx) => (
+        <li key={idx} className="flex items-center gap-2">
+          <a
+            href={att.url}
+            className="text-blue-600 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {att.name}
+          </a>
+          <button
+            className="text-xs text-red-500 hover:underline"
+            onClick={() => handleRemoveAttachment(idx)}
+            type="button"
+          >
+            Remove
+          </button>
+        </li>
+      ))}
+    </ul>
+    {/* Styled file input */}
+    <div className="mb-2">
+      <input
+        id="file-upload"
+        type="file"
+        multiple
+        onChange={handleAddAttachment}
+        className="hidden"
+      />
+      <label
+        htmlFor="file-upload"
+        className="inline-flex items-center px-4 py-2 bg-secondary text-white rounded cursor-pointer hover:bg-secondary/90 transition"
+      >
+        <FiUpload className="mr-2" />
+        Add Files
+      </label>
+    </div>
+    <div className="flex gap-2">
+      <button
+        className="px-4 py-1 rounded bg-secondary text-white"
+        onClick={handleSaveAttachments}
+      >
+        Save
+      </button>
+      <button
+        className="px-4 py-1 rounded bg-gray-200 text-gray-700"
+        onClick={handleCancelAttachments}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+            ) : (
+              <ul className="list-disc pl-5 space-y-1">
+                {request.attachments.map((att, idx) => (
+                  <li key={idx}>
+                    <a
+                      href={att.url}
+                      className="text-blue-600 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {att.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Offers */}
