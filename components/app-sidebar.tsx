@@ -38,14 +38,14 @@ const items = [
   {
     title: "Users",
     url: "/users",
-    icon: <LayoutDashboard />,
+    icon: <Users />,
   },
 
-  // {
-  //   title: "Properties",
-  //   url: "/Properties",
-  //   icon: <Building />,
-  // },
+  {
+    title: "Service Requests",
+    url: "/ServiceRequests",
+    icon: <Building />,
+  },
   // {
   //   title: "Cities",
   //   url: "/Cities",
@@ -129,11 +129,12 @@ export function AppSidebar() {
 
   const pathMap = {
     "/overview": "Overview",
+    "/users": "Users",
+    "/ServiceRequests":"Service Requests",
     "/pending": "Pending",
     "/Properties": "Properties",
     "/Cities": "Cities",
     "/Projects": "Projects",
-    "/users": "Users",
     "/plans": "Package",
     "/messages": "Messages",
     "/payments": "Payments",
