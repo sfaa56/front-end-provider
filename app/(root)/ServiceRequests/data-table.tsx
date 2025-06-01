@@ -64,8 +64,8 @@ export function DataTable({ data }: DataTableProps) {
 
   return (
     <div>
-      <div className="flex  mb-4 justify-between">
-        <div className="flex bg-white items-center rounded-md border px-[5px] text-sm font-sans">
+      <div className="flex  mb-4 justify-between flex-col md:flex-row">
+        <div className="flex bg-white items-center rounded-md border px-[5px] text-sm font-sans py-1 max-w-[330px] mb-2 md:mb-0">
           {["All", "waiting", "inprogress", "completed"].map((status) => (
             <button
               key={status}
