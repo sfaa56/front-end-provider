@@ -45,14 +45,7 @@ const ActionCell = ({ row }: { row: { original: ServiceRequest } }) => {
         <FiEye />
       </button></Link>
 
-      <Link href={`/requests/edit/${request._id}`}>
-        <button
-          title="Edit"
-          className="p-2 rounded hover:bg-gray-100 text-green-600"
-        >
-          <FiEdit />
-        </button>
-      </Link>
+  
 
       <AlertDialog>
         <AlertDialogTrigger asChild>

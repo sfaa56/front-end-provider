@@ -27,6 +27,8 @@ import { FaCreativeCommonsShare } from "react-icons/fa";
 
 import { MdOutlineLibraryBooks } from "react-icons/md";
 import { TbUserQuestion } from "react-icons/tb";
+import { BiCategoryAlt } from "react-icons/bi";
+import { MdOutlinePostAdd } from "react-icons/md";
 
 // Menu items.
 const items = [
@@ -44,13 +46,19 @@ const items = [
   {
     title: "Service Requests",
     url: "/ServiceRequests",
-    icon: <Building />,
+    icon: <MdOutlinePostAdd />,
+  }, 
+  
+  {
+    title: "Categories",
+    url: "/categoriesAndServices",
+    icon: <BiCategoryAlt  />,
   },
-  // {
-  //   title: "Cities",
-  //   url: "/Cities",
-  //   icon: <MapPinned />,
-  // },
+  {
+    title: "Cities",
+    url: "/cities",
+    icon: <MapPinned />,
+  },
 
   // {
   //   title: "Projects",
@@ -131,9 +139,10 @@ export function AppSidebar() {
     "/overview": "Overview",
     "/users": "Users",
     "/ServiceRequests":"Service Requests",
+    "/categoriesAndServices":"Categories",
     "/pending": "Pending",
     "/Properties": "Properties",
-    "/Cities": "Cities",
+    "/cities": "Cities",
     "/Projects": "Projects",
     "/plans": "Package",
     "/messages": "Messages",
