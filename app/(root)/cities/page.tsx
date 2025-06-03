@@ -101,10 +101,17 @@ function Page() {
     setCityForm({ name: "", districts: [], newDistrict: "" });
   };
 
-  const handleEditCity = (idx: number) => {
-    setCityForm({ name: cities[idx].name, districts: [], newDistrict: "" });
-    setEditingCityIdx(idx);
-  };
+const handleEditCity = (idx: number) => {
+  setCityForm({
+    name: cities[idx].name,
+    districts: cities[idx].districts.map((d) => ({
+      ...d,
+      newPostalCode: "",
+    })),
+    newDistrict: "",
+  });
+  setEditingCityIdx(idx);
+};
 
   const handleDeleteCity = (idx: number) => {
     setCities((prev) => prev.filter((_, i) => i !== idx));
@@ -157,10 +164,13 @@ function Page() {
   // };
 
   const handleEditDistrict = (idx: number) => {
-    if (selectedCityIdx === null) return;
-    setDistrictForm({ name: cities[selectedCityIdx].districts[idx].name });
-    setEditingDistrictIdx(idx);
-  };
+  if (selectedCityIdx === null) return;
+  const district = cities[selectedCityIdx].districts[idx];
+  setDistrictForm({ name: district.name });
+  setDistrictPostalCodes(district.postalCodes.map((p) => p.code));
+  setNewDistrictPostal("");
+  setEditingDistrictIdx(idx);
+};
 
   const handleDeleteDistrict = (idx: number) => {
     if (selectedCityIdx === null) return;
@@ -339,7 +349,7 @@ function Page() {
               </thead>
               <tbody>
                 {cities.map((city, idx) => (
-                  <tr key={idx} className="border-b hover:bg-gray-50 ">
+                  <tr key={idx} className="border-b ">
                     <td className="p-3 font-semibold">{city.name}</td>
 
                     <td className="p-3 font-semibold">
@@ -355,7 +365,7 @@ function Page() {
 
                     <td className="p-3">
                       <span
-                        className={`inline-block px-3 py-1 font-medium rounded-full text-xs  ${
+                        className={`inline-block text-center py-1 font-medium rounded-full text-xs w-[60px] ${
                           city.active
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -379,7 +389,7 @@ function Page() {
                         Delete
                       </button>
                       <button
-                        className={`px-3 py-1 rounded text-xs transition ${
+                        className={`px- w-[76px] py-1 rounded text-xs transition ${
                           city.active
                             ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             : "bg-gray-200 text-gray-500"
@@ -422,7 +432,7 @@ function Page() {
                     </td>
                     <td >
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-block text-center w-[60px] py-1 rounded-full text-xs font-semibold ${
                           district.active
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -447,7 +457,7 @@ function Page() {
                       </button>
 
                       <button
-                        className={`px-2 py-0.5 rounded text-xs  transition ${
+                        className={`w-[76px] py-0.5 rounded text-xs  transition ${
                           district.active
                             ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             : "bg-gray-200 text-gray-500"
@@ -501,7 +511,7 @@ function Page() {
                     <td className="p-3 font-medium">{postal.code}</td>
                     <td>
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-block w-[60px] text-center py-1 rounded-full text-xs font-semibold ${
                           postal.active
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -525,7 +535,7 @@ function Page() {
                         Delete
                       </button>
                       <button
-                        className={`px-2 py-0.5 rounded text-xs  transition ${
+                        className={`w-[72px] py-0.5 rounded text-xs  transition ${
                           postal.active
                             ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             : "bg-gray-200 text-gray-500"
@@ -595,17 +605,18 @@ function Page() {
 
                   <div>
                     <Label className="text-sm mb-1">Districts</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-wrap gap-2 ">
                       {cityForm.districts?.map((district, dIdx) => (
                         <div
                           key={dIdx}
-                          className="flex flex-col bg-gray-50 rounded p-2"
+                          className="flex flex-col bg-gray-50 rounded p-2 mb-2 gap-3 "
                         >
-                          <div className="flex items-center gap-2">
+
+                          <div className="flex items-start justify-between -mt-2">
                             <span className="font-medium">{district.name}</span>
                             <button
                               type="button"
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-700 "
                               onClick={() => {
                                 setCityForm((prev) => ({
                                   ...prev,
@@ -618,12 +629,13 @@ function Page() {
                               ×
                             </button>
                           </div>
+                          
                           {/* Postal Codes for this district */}
-                          <div className="flex flex-wrap gap-1 mt-1">
+                          <div className="flex flex-wrap gap-1 ">
                             {district.postalCodes.map((pc, pIdx) => (
                               <span
                                 key={pIdx}
-                                className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs flex items-center"
+                                className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs flex items-center "
                               >
                                 {pc.code}
                                 <button
@@ -653,7 +665,7 @@ function Page() {
                             <input
                               type="text"
                               placeholder="Add postal code"
-                              className="border rounded px-2 py-0.5 text-xs w-[105px] focus:outline-none  focus:border-secondary"
+                              className="border rounded px-2 py-0.5 text-xs w-[105px] focus:outline-none   focus:border-secondary"
                               value={district.newPostalCode || ""}
                               onChange={(e) => {
                                 const val = e.target.value;
@@ -700,7 +712,7 @@ function Page() {
                       ))}
                     </div>
                     {/* Add district input */}
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-">
                       <Input
                         type="text"
                         placeholder="District name"
@@ -777,6 +789,7 @@ function Page() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!districtForm.name.trim()) return;
+                    
                     // Add district with postal codes
                     setCities((prev) =>
                       prev.map((city, cIdx) =>
