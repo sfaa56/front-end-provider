@@ -355,7 +355,7 @@ function Page() {
 
                     <td className="p-3">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-block px-3 py-1 font-medium rounded-full text-xs  ${
                           city.active
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -367,19 +367,19 @@ function Page() {
 
                     <td className="p-3 flex gap-2 justify-self-end">
                       <button
-                        className="px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-medium transition"
+                        className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs  transition"
                         onClick={() => handleEditCity(idx)}
                       >
                         Update
                       </button>
                       <button
-                        className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs font-medium transition"
+                        className="px-2 py-0.5 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs  transition"
                         onClick={() => handleDeleteCity(idx)}
                       >
                         Delete
                       </button>
                       <button
-                        className={`px-3 py-1 rounded text-xs font-medium transition ${
+                        className={`px-3 py-1 rounded text-xs transition ${
                           city.active
                             ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             : "bg-gray-200 text-gray-500"
