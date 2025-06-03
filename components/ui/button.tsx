@@ -22,7 +22,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         signIn:"w-full bg-tertiary hover:bg-tertiary/90 text-white  text-[14px]",
         sidebar:"w-full flex items-center justtify-start gap-3 hover:bg-gray-100  hover:scale-105 transition-all duration-200",
-        submit:" rounded bg-secondary text-white hover:bg-secondary/90",
+        submit:" rounded bg-secondary text-white hover:bg-secondary/90 ",
         cancel:"px-4 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-150"
       },
       size: {

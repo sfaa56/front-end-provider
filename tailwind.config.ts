@@ -92,10 +92,7 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      		fontFamily: {
-    			sans: [ 'Helvetica', 'system-ui', 'sans-serif'],
-				
-    		},
+    
       boxShadow: {
         100: "2px 2px 0px 0px rgb(0, 0, 0)",
         200: "2px 2px 0px 2px rgb(0, 0, 0)",

@@ -276,7 +276,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
 
       <div className="flex flex-col md:flex-row gap-8 ">
         {/* Left Column */}
-        <div className="md:w-1/3 w-full space-y-5">
+        <div className="md:w-[28%] w-full space-y-5">
           {/* Service Request Info */}
           <div className="bg-white rounded-sm shadow p-4">
             <div className="flex items-center justify-between">
@@ -301,7 +301,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
                 <span className="font-medium mb-2">Status </span>
                 <span className="font-medium">Post Date </span>
                 <span className="font-medium">Estimate</span>
-                <span>Cost</span>
+                <span className="font-medium">Cost</span>
                 <span className="font-medium">Specialty </span>
               </div>
 
@@ -434,7 +434,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
         </div>
 
         {/* Right Column */}
-        <div className="md:w-2/3 w-full space-y-5">
+        <div className="flex-1 w-full space-y-5">
           {/* Request Details */}
           <div className="bg-white rounded-sm shadow p-4">
             <div className="flex items-center justify-between">

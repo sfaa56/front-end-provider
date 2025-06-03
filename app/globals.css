@@ -183,8 +183,8 @@
   * {
   }
   body {
+    @apply font-sans;
     margin: 0;
-    font-family: Helvetica, sans-serif !important;
     position: relative;
     overflow-x: hidden;
   }
