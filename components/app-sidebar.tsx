@@ -92,11 +92,11 @@ const items = [
   //   url: "/reports",
   //   icon: <FaRegFlag />,
   // },
-  // {
-  //   title: "Payments",
-  //   url: "/payments",
-  //   icon: <CreditCard />,
-  // },
+  {
+    title: "Payments",
+    url: "/payments/transaction",
+    icon: <CreditCard />,
+  },
   // {
   //   title: "Amenities",
   //   url: "/amenities",
