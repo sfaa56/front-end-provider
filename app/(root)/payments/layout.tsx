@@ -1,6 +1,6 @@
-import React from 'react'
-import FinancialKPIs from './FinancialKPIs'
-import PaymentsNav from '@/components/payments/PaymentsNav'
+import React from "react";
+import FinancialKPIs from "./FinancialKPIs";
+import PaymentsNav from "@/components/payments/PaymentsNav";
 // Dummy data
 const invoices = [
   {
@@ -24,10 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
-    
-      const totalPayments = 2000;
+  const totalPayments = 2000;
   const totalEarnings = invoices
     .filter((i) => i.status === "Paid")
     .reduce((sum, i) => sum + Number(i.amount.replace("$", "")), 0);
@@ -38,27 +35,22 @@ export default function RootLayout({
   const kpis = [
     { label: "Total Payments", value: `$${totalPayments}` },
     { label: "Platform Earnings", value: `$${totalEarnings}` },
-    { label: "Total Invoices", value: totalInvoices},
+    { label: "Total Invoices", value: totalInvoices },
     { label: "Pending Withdrawals", value: pendingWithdrawals },
-    { label: "Commission", value: `${totalCommission}`},
+    { label: "Commission", value: `${totalCommission}` },
   ];
 
-
-
   return (
-    <div className='px-6'> 
-     <div className="flex w-full items-end ">
+    <div className="px-6">
+      <div className="flex w-full items-end ">
         <h1 className="text-black-200 font-semibold text-xl font-sans  mb-4">
           Payment
         </h1>
       </div>
-             <FinancialKPIs kpis={kpis} />
+      <FinancialKPIs kpis={kpis} />
 
-    
       <PaymentsNav />
       {children}
-
     </div>
-  )
+  );
 }
-

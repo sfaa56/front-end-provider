@@ -41,8 +41,8 @@ const FinancialKPIs: React.FC<FinancialKPIsProps> = ({ kpis }) => (
           {kpi.icon || getIconForLabel(kpi.label)}
         </div>
         <div>
-          <div className="text-xs text-gray-500 mb-1">{kpi.label}</div>
-          <div className={`text-2xl font-bold ${kpi.color || "text-black"}`}>
+          <div className=" text-gray-500 mb-1">{kpi.label}</div>
+          <div className={`text-xl font-bold ${kpi.color || "text-black"}`}>
             {kpi.value}
           </div>
         </div>

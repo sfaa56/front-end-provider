@@ -7,9 +7,10 @@ const navItems = [
   { href: "/payments/transaction", label: "Transactions" },
   { href: "/payments/withdrawal", label: "Withdrawals" },
   { href: "/payments/invoice", label: "Invoices" },
+  { href: "/payments/earnings", label: "Earnings" },
 ];
 
-type PaymentPath = "/payments/transaction" | "/payments/withdrawal" | "/payments/invoice";
+type PaymentPath = "/payments/transaction" | "/payments/withdrawal" | "/payments/invoice" | "/payments/earnings";
 
 export default function PaymentsNav() {
   const underlineRef = useRef<HTMLSpanElement>(null);
@@ -18,6 +19,7 @@ export default function PaymentsNav() {
     "/payments/transaction": useRef<HTMLAnchorElement>(null),
     "/payments/withdrawal": useRef<HTMLAnchorElement>(null),
     "/payments/invoice": useRef<HTMLAnchorElement>(null),
+    "/payments/earnings": useRef<HTMLAnchorElement>(null),
   };
   const pathname = usePathname() as PaymentPath;
 

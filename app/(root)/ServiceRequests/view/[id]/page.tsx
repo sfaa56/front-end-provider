@@ -283,7 +283,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
               <h2 className="text-base font-medium">Request Info</h2>
               {!isEditingInfo && (
                 <button
-                  className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-10"
+                  className="text-xs px-2 py-1 rounded  text-secondary border   transition    shadow  hover:bg-secondary hover:bg-opacity-5"
                   onClick={() => setIsEditingInfo(true)}
                 >
                   Update
@@ -441,7 +441,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
               <h2 className="text-base font-medium">Request Details</h2>
               {!isEditingDetails && (
                 <button
-                  className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-10"
+                  className="text-xs px-2 py-1 rounded  text-secondary border   transition   shadow  hover:bg-secondary hover:bg-opacity-5"
                   onClick={() => setIsEditingDetails(true)}
                 >
                   Update
@@ -477,12 +477,15 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
               <h2 className="text-base font-medium">Attachments</h2>
               {!isEditingAttachments && (
                 <button
-                  className="text-xs px-2 py-1 rounded text-secondary border transition shadow hover:bg-secondary hover:bg-opacity-10"
+                  className="text-xs px-2 py-1 rounded text-secondary border transition shadow hover:bg-secondary hover:bg-opacity-5"
                   onClick={() => setIsEditingAttachments(true)}
                 >
                   Update
                 </button>
               )}
+
+
+              
             </div>
             <div className="-mx-4 w-[calc(100%+2rem)] h-[1px] bg-gray-300 my-3"></div>
             {isEditingAttachments ? (
@@ -566,7 +569,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
                   <li
                     key={idx}
                     className={`border rounded p-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 bg-gray-50 ${
-                      isAssigned ? "border-blue-500 bg-blue-50" : ""
+                      isAssigned ? "border-secondary bg-blue-50" : ""
                     }`}
                   >
                     <div className="flex flex-col">
@@ -593,7 +596,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe veniam ipsa nisi 
 
                       <div className={`flex ${isAssigned?"justify-between":"justify-end "}  items-end gap-1 min-w-[90px]`}>
                         {isAssigned && (
-                          <span className="ml-2 px-2 py-0.5 rounded bg-blue-500 text-white text-xs">
+                          <span className="ml-2 px-2 py-0.5 rounded bg-secondary text-white text-xs">
                             Working
                           </span>
                         )}

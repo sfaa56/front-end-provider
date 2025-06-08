@@ -22,10 +22,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { usePathname, useRouter } from "next/navigation";
+import { FiSearch } from "react-icons/fi";
+import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -46,8 +53,6 @@ const PropertyType = [
   "Full Floor",
 ];
 
-
-
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -66,7 +71,7 @@ export function DataTable<TData, TValue>({
   }>({});
 
   const pathname = usePathname();
-  const router =useRouter();
+  const router = useRouter();
 
   const table = useReactTable({
     data,
@@ -83,15 +88,184 @@ export function DataTable<TData, TValue>({
     },
   });
 
-
-
   return (
     <div>
-  
+      <div className="flex justify-start  gap-4 mb-3">
+        <div className="relative max-w-sm">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
+            <FiSearch />
+          </span>
+          <Input
+            placeholder="Search ..."
+            value={
+              (table.getColumn("customer")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("customer")?.setFilterValue(event.target.value)
+            }
+            className="pl-10 "
+          />
+        </div>
 
-      <div className="rounded-md border ">
+        {pathname === "/payments/transaction" && (
+          <>
+            <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Service" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"software"}>Software</SelectItem>
+                  <SelectItem value={"Electrician"}>Electrician</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"Success"}>Success</SelectItem>
+                  <SelectItem value={"Failed"}>Failed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+        {pathname === "/payments/withdrawal" && (
+          <>
+            <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"Pending"}>Pending</SelectItem>
+                  <SelectItem value={"Approved"}>Approved</SelectItem>
+                  <SelectItem value={"Failed"}>Failed</SelectItem>
+     
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+         {pathname === "/payments/earnings" && (
+          <>
+
+                    <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Service" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"software"}>Software</SelectItem>
+                  <SelectItem value={"Electrician"}>Electrician</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"Pending"}>Pending</SelectItem>
+                  <SelectItem value={"Approved"}>Available</SelectItem>
+                  <SelectItem value={"Failed"}>Withdrawn</SelectItem>
+     
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+
+
+
+   {pathname === "/payments/invoice" && (
+          <>
+            <div className="flex items-center">
+              <Select
+                onValueChange={(value) => {
+                  const column = table.getColumn("status");
+                  if (column) {
+                    column.setFilterValue(value === "All" ? undefined : value);
+                  }
+                }}
+              >
+                <SelectTrigger className="gap-4">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={"All"}>All</SelectItem>
+                  <SelectItem value={"Paid"}>Paid</SelectItem>
+                  <SelectItem value={"Unpaid"}>Unpaid</SelectItem>
+     
+                </SelectContent>
+              </Select>
+            </div>
+
+
+
+            
+          </>
+        )}
+
+      </div>
+
+      <div className="rounded-md border bg-white">
         <Table className="rounded-md">
-          <TableHeader>
+           <TableHeader className="text-gray-500">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -115,8 +289,9 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-        
-                  className={`${pathname.includes("pending")&&"cursor-pointer"} `}
+                  className={`${
+                    pathname.includes("pending") && "cursor-pointer"
+                  } `}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

@@ -10,20 +10,22 @@ const transactions = [
   {
     id: "TXN001",
     customer: "Alice",
-    provider: "Plumber Pro",
+    provider: "Ahmed",
     amount: "$120",
     commission: "$12",
     date: "2024-06-01",
     status: "Success",
+    service:"software"
   },
   {
     id: "TXN002",
     customer: "Bob",
-    provider: "Electrician Hub",
+    provider: "Karem",
     amount: "$80",
     commission: "$8",
     date: "2024-06-02",
     status: "Failed",
+    service:"Electrician"
   },
   // ...more
 ];
@@ -52,37 +54,7 @@ const TransactionPage = () => {
 
   return (
     <div className=" ">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4">
-        <input
-          type="date"
-          className="border rounded px-2 py-1"
-          value={filter.date}
-          onChange={(e) => setFilter((f) => ({ ...f, date: e.target.value }))}
-        />
-        <select
-          className="border rounded px-2 py-1"
-          value={filter.provider}
-          onChange={(e) =>
-            setFilter((f) => ({ ...f, provider: e.target.value }))
-          }
-        >
-          <option value="">All Providers</option>
-          {providers.map((p) => (
-            <option key={p}>{p}</option>
-          ))}
-        </select>
-        <select
-          className="border rounded px-2 py-1"
-          value={filter.status}
-          onChange={(e) => setFilter((f) => ({ ...f, status: e.target.value }))}
-        >
-          <option value="">All Statuses</option>
-          {statuses.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
-      </div>
+
 
 
       {/* Table */}
