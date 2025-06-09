@@ -173,17 +173,15 @@ export function DataTable<TData, TValue>({
                   <SelectItem value={"Pending"}>Pending</SelectItem>
                   <SelectItem value={"Approved"}>Approved</SelectItem>
                   <SelectItem value={"Failed"}>Failed</SelectItem>
-     
                 </SelectContent>
               </Select>
             </div>
           </>
         )}
 
-         {pathname === "/payments/earnings" && (
+        {pathname === "/payments/earnings" && (
           <>
-
-                    <div className="flex items-center">
+            <div className="flex items-center">
               <Select
                 onValueChange={(value) => {
                   const column = table.getColumn("status");
@@ -221,17 +219,13 @@ export function DataTable<TData, TValue>({
                   <SelectItem value={"Pending"}>Pending</SelectItem>
                   <SelectItem value={"Approved"}>Available</SelectItem>
                   <SelectItem value={"Failed"}>Withdrawn</SelectItem>
-     
                 </SelectContent>
               </Select>
             </div>
           </>
         )}
 
-
-
-
-   {pathname === "/payments/invoice" && (
+        {pathname === "/payments/invoice" && (
           <>
             <div className="flex items-center">
               <Select
@@ -250,22 +244,16 @@ export function DataTable<TData, TValue>({
                   <SelectItem value={"All"}>All</SelectItem>
                   <SelectItem value={"Paid"}>Paid</SelectItem>
                   <SelectItem value={"Unpaid"}>Unpaid</SelectItem>
-     
                 </SelectContent>
               </Select>
             </div>
-
-
-
-            
           </>
         )}
-
       </div>
 
       <div className="rounded-md border bg-white">
         <Table className="rounded-md">
-           <TableHeader className="text-gray-500">
+          <TableHeader className="text-gray-500">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

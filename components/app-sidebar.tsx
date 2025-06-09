@@ -6,7 +6,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
-import { House, Mail } from "lucide-react";
+import { Briefcase, House, Mail, Settings } from "lucide-react";
 // import { Mail } from "lucide-react";
 import { Package2 } from "lucide-react";
 import { MapPinned } from "lucide-react";
@@ -16,7 +16,7 @@ import { CreditCard } from "lucide-react";
 import { Button } from "./ui/button";
 import { LayoutDashboard } from "lucide-react";
 
-import { FaRegFlag } from "react-icons/fa6";
+import { FaBriefcase, FaRegFlag } from "react-icons/fa6";
 import { Building } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -29,6 +29,8 @@ import { MdOutlineLibraryBooks } from "react-icons/md";
 import { TbUserQuestion } from "react-icons/tb";
 import { BiCategoryAlt } from "react-icons/bi";
 import { MdOutlinePostAdd } from "react-icons/md";
+import { FaStar } from "react-icons/fa";
+import { HiOutlineBadgeCheck } from "react-icons/hi";
 
 // Menu items.
 const items = [
@@ -43,87 +45,76 @@ const items = [
     icon: <Users />,
   },
 
+
+  {
+    title: "Complaints & Support",
+    url: "/complaints",
+    icon: <FaRegFlag />,
+  },
+  {
+    title: "Payments",
+    url: "/payments/transaction",
+    icon: <CreditCard />,
+  },
+
+
+
+];
+
+
+ 
+
+const serviceSection = [
   {
     title: "Service Requests",
     url: "/ServiceRequests",
     icon: <MdOutlinePostAdd />,
-  }, 
-  
+  },
   {
     title: "Categories",
     url: "/categoriesAndServices",
-    icon: <BiCategoryAlt  />,
+    icon: <BiCategoryAlt />,
+  },
+    {
+    title: "Specialties",
+    url: "/specialties",
+    icon:  <Briefcase />
+  },
+  {
+    title: "Bidding Settings",
+    url: "/biddingSettings",
+    icon: <FaCreativeCommonsShare />,
+  },
+];
+
+
+const contentManagementSection = [
+  {
+    title: "CMS Pages",
+    url: "/cms",
+    icon: <IoPhoneLandscapeSharp />,
+  },
+  {
+    title: "Blogs",
+    url: "/blogs",
+    icon: <MdOutlineLibraryBooks />,
+  },
+];
+
+
+const settings =[
+  {
+    title:"General Settings",
+    url:"/settings",
+    icon: <Settings />,
   },
   {
     title: "Cities",
     url: "/cities",
     icon: <MapPinned />,
   },
-
-  // {
-  //   title: "Projects",
-  //   url: "/projects",
-  //   icon: <House />,
-  // },
-
-  // {
-  //   title: "Users",
-  //   url: "/users",
-  //   icon: <Users />,
-  // },
-
-  // {
-  //   title: "Package",
-  //   url: "/plans",
-  //   icon: <Package2 />,
-  // },
-  // {
-  //   title: "Messages",
-  //   url: "/messages",
-  //   icon: <Mail />,
-  // },
-  // {
-  //   title: "Requests",
-  //   url: "/requests",
-  //   icon: <TbUserQuestion />,
-  // },
-  // {
-  //   title: "Reports",
-  //   url: "/reports",
-  //   icon: <FaRegFlag />,
-  // },
-  {
-    title: "Payments",
-    url: "/payments/transaction",
-    icon: <CreditCard />,
-  },
-  // {
-  //   title: "Amenities",
-  //   url: "/amenities",
-  //   icon: <FaCreativeCommonsShare />,
-  // },
-  // {
-  //   title: "Panners",
-  //   url: "/panners",
-  //   icon: <IoPhoneLandscapeSharp />,
-  // },
-  // {
-  //   title: "Blogs",
-  //   url: "/blogs",
-  //   icon: <MdOutlineLibraryBooks />,
-  // },
-
-  // {
-  //   title: "CMS",
-  //   url: "/cms",
-  //   icon: <IoPhoneLandscapeSharp />,
-  // },
-
-   {
-    title: "Logout",
-    icon: <FiLogOut />,
-  },
-];
+  
+]
 
 export function AppSidebar() {
   const [activeItem, setActiveItem] = useState<string | null>(null);
@@ -133,25 +124,27 @@ export function AppSidebar() {
     setActiveItem(title);
   };
 
-  console.log("pathhhhh", pathname);
+
 
   const pathMap = {
     "/overview": "Overview",
     "/users": "Users",
-    "/ServiceRequests":"Service Requests",
-    "/categoriesAndServices":"Categories",
+    "/ServiceRequests": "Service Requests",
+    "/categoriesAndServices": "Categories",
+    "/specialties": "Specialties",
     "/pending": "Pending",
-    "/Properties": "Properties",
     "/cities": "Cities",
-    "/Projects": "Projects",
+    "/payments": "Payments",
+    "/complaints": "Complaints & Support",
+    "/biddingSettings": "Bidding Settings",
+
     "/plans": "Package",
     "/messages": "Messages",
-    "/payments": "Payments",
     "/amenities": "Amenities",
     "/panners": "Panners",
     "/requests": "Requests",
-    "/reports": "Reports",
-    "/cms": "CMS",
+
+    "/cms": "CMS Pages",
     "/blogs": "Blogs",
   };
 
@@ -173,38 +166,162 @@ export function AppSidebar() {
           </span>
         </div>
 
-        <div className="flex  flex-col gap-1  mt-5">
-          {items.map((i, key) => (
-            <Link href={i.url || "#"} key={key} className="block">
-              <div className="relative w-full px-4">
-                {activeItem === i.title && (
-                  <div className="rounded-tr-md rounded-br-md w-1 h-6 bg-secondary  absolute top-[6px] left-0 transition-all"></div>
-                )}
+    
 
-                <Button
-                  variant={"sidebar"}
-                  key={key}
-                  className={` items-center justify-start gap-3 text-gray-500 ${
-                    activeItem === i.title
-                      ? " text-secondary bg-secondary bg-opacity-10 font-sans font-semibold"
-                      : ""
-                  }`}
-                  onClick={() => handleItemClick(i.title)}
-                >
-                  <span
-                    className={`${
-                      activeItem === i.title ? "text-secondary " : ""
+             {/* Other menu items */}
+        <div className="flex flex-col gap-1">
+
+          
+          {items
+    
+            .map((i, key) => (
+              <Link href={i.url || "#"} key={key} className="block">
+                <div className="relative w-full px-4">
+                  {activeItem === i.title && (
+                    <div className="rounded-tr-md rounded-br-md w-1 h-6 bg-secondary  absolute top-[6px] left-0 transition-all"></div>
+                  )}
+
+                  <Button
+                    variant={"sidebar"}
+                    key={key}
+                    className={` items-center justify-start gap-3 text-gray-700 ${
+                      activeItem === i.title
+                        ? " text-secondary bg-secondary bg-opacity-10 font-sans font-semibold"
+                        : "font-normal"
                     }`}
+                    onClick={() => handleItemClick(i.title)}
                   >
-                    {i.icon}
-                  </span>
-                  
-                  <span className="te">{i.title}</span>
-                </Button>
-              </div>
-            </Link>
-          ))}
+                    <span
+                      className={`${
+                        activeItem === i.title ? "text-secondary " : ""
+                      }`}
+                    >
+                      {i.icon}
+                    </span>
+                    <span className="te">{i.title}</span>
+                  </Button>
+                </div>
+              </Link>
+            ))}
         </div>
+
+        {/* Services Section */}
+        <div className="mt-3">
+          <div className="px-8 pb-2  text-xs  text-gray-500  uppercase tracking-wider">
+            Services
+          </div>
+          <div className="flex flex-col gap-1">
+            {serviceSection.map((i, key) => (
+              <Link href={i.url || "#"} key={key} className="block">
+                <div className="relative w-full px-4">
+                  {activeItem === i.title && (
+                    <div className="rounded-tr-md rounded-br-md w-1 h-6 bg-secondary absolute top-[6px] left-0 transition-all"></div>
+                  )}
+                  <Button
+                    variant={"sidebar"}
+                    className={`items-center justify-start gap-3 text-gray-700 ${
+                      activeItem === i.title
+                        ? " text-secondary bg-secondary bg-opacity-10 font-sans font-semibold"
+                        : "font-normal"
+                    }`}
+                    onClick={() => handleItemClick(i.title)}
+                  >
+                    <span
+                      className={`${
+                        activeItem === i.title ? "text-secondary " : ""
+                      }`}
+                    >
+                      {i.icon}
+                    </span>
+                    <span>{i.title}</span>
+                  </Button>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+               {/* Content Management Section */}
+        <div className=" border-gray-200  mt-4">
+          <div className="px-8 pb-2 text-xs text-gray-500 uppercase tracking-wider">
+            Content Management
+          </div>
+          <div className="flex flex-col gap-1">
+            {contentManagementSection.map((i, key) => (
+              <Link href={i.url || "#"} key={key} className="block">
+                <div className="relative w-full px-4">
+                  {activeItem === i.title && (
+                    <div className="rounded-tr-md rounded-br-md w-1 h-6 bg-secondary absolute top-[6px] left-0 transition-all"></div>
+                  )}
+                  <Button
+                    variant={"sidebar"}
+                    className={`items-center justify-start gap-3 text-gray-700 ${
+                      activeItem === i.title
+                        ? " text-secondary bg-secondary bg-opacity-10 font-sans font-semibold"
+                        : "font-normal"
+                    }`}
+                    onClick={() => handleItemClick(i.title)}
+                  >
+                    <span
+                      className={`${
+                        activeItem === i.title ? "text-secondary " : ""
+                      }`}
+                    >
+                      {i.icon}
+                    </span>
+                    <span>{i.title}</span>
+                  </Button>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+
+
+               {/* Settings Section */}
+
+          <div className=" border-gray-200  mt-4">
+          <div className="px-8 pb-2 text-xs text-gray-500 uppercase tracking-wider">
+            Settings
+          </div>
+          <div className="flex flex-col gap-1">
+            {settings.map((i, key) => (
+              <Link href={i.url || "#"} key={key} className="block">
+                <div className="relative w-full px-4">
+                  {activeItem === i.title && (
+                    <div className="rounded-tr-md rounded-br-md w-1 h-6 bg-secondary absolute top-[6px] left-0 transition-all"></div>
+                  )}
+                  <Button
+                    variant={"sidebar"}
+                    className={`items-center justify-start gap-3 text-gray-700 ${
+                      activeItem === i.title
+                        ? " text-secondary bg-secondary bg-opacity-10 font-sans font-semibold"
+                        : "font-normal"
+                    }`}
+                    onClick={() => handleItemClick(i.title)}
+                  >
+                    <span
+                      className={`${
+                        activeItem === i.title ? "text-secondary " : ""
+                      }`}
+                    >
+                      {i.icon}
+                    </span>
+                    <span>{i.title}</span>
+                  </Button>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+
+        
+
+        
+
+   
       </SidebarContent>
       <SidebarFooter />
     </Sidebar>

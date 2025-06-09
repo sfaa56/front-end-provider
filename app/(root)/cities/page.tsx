@@ -101,17 +101,17 @@ function Page() {
     setCityForm({ name: "", districts: [], newDistrict: "" });
   };
 
-const handleEditCity = (idx: number) => {
-  setCityForm({
-    name: cities[idx].name,
-    districts: cities[idx].districts.map((d) => ({
-      ...d,
-      newPostalCode: "",
-    })),
-    newDistrict: "",
-  });
-  setEditingCityIdx(idx);
-};
+  const handleEditCity = (idx: number) => {
+    setCityForm({
+      name: cities[idx].name,
+      districts: cities[idx].districts.map((d) => ({
+        ...d,
+        newPostalCode: "",
+      })),
+      newDistrict: "",
+    });
+    setEditingCityIdx(idx);
+  };
 
   const handleDeleteCity = (idx: number) => {
     setCities((prev) => prev.filter((_, i) => i !== idx));
@@ -164,13 +164,13 @@ const handleEditCity = (idx: number) => {
   // };
 
   const handleEditDistrict = (idx: number) => {
-  if (selectedCityIdx === null) return;
-  const district = cities[selectedCityIdx].districts[idx];
-  setDistrictForm({ name: district.name });
-  setDistrictPostalCodes(district.postalCodes.map((p) => p.code));
-  setNewDistrictPostal("");
-  setEditingDistrictIdx(idx);
-};
+    if (selectedCityIdx === null) return;
+    const district = cities[selectedCityIdx].districts[idx];
+    setDistrictForm({ name: district.name });
+    setDistrictPostalCodes(district.postalCodes.map((p) => p.code));
+    setNewDistrictPostal("");
+    setEditingDistrictIdx(idx);
+  };
 
   const handleDeleteDistrict = (idx: number) => {
     if (selectedCityIdx === null) return;
@@ -352,11 +352,9 @@ const handleEditCity = (idx: number) => {
                   <tr key={idx} className="border-b ">
                     <td className="p-3 font-semibold">{city.name}</td>
 
-                    <td className="p-3 font-semibold">
-                      {city.districts.length}
-                    </td>
+                    <td className="p-3 ">{city.districts.length}</td>
 
-                    <td className="p-3 font-semibold">
+                    <td className="p-3 ">
                       {city.districts.reduce(
                         (sum, d) => sum + d.postalCodes.length,
                         0
@@ -377,35 +375,38 @@ const handleEditCity = (idx: number) => {
 
                     <td className="p-3 flex gap-2 justify-self-end">
                       <button
-                        className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs  transition"
-                        onClick={() => handleEditCity(idx)}
-                      >
-                        Update
-                      </button>
-                      <button
-                        className="px-2 py-0.5 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs  transition"
-                        onClick={() => handleDeleteCity(idx)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className={`px- w-[76px] py-1 rounded text-xs transition ${
+                        className={`px- w-[76px] py-1  rounded border  text-xs transition ${
                           city.active
-                            ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "border-gray-300 text-gray-700 hover:bg-gray-100"
                             : "bg-gray-200 text-gray-500"
                         }`}
                         onClick={() => handleToggleCityActive(idx)}
                       >
                         {city.active ? "Deactivate" : "Activate"}
                       </button>
+
                       <button
-                        className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs transition"
+                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
+                        onClick={() => handleEditCity(idx)}
+                      >
+                        Update
+                      </button>
+
+                      <button
+                        className="px-2 py-0.5  rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs  transition"
                         onClick={() => {
                           setSelectedCityIdx(idx);
                           setSelectedDistrictIdx(null);
                         }}
                       >
-                        View Districts
+                         Districts
+                      </button>
+
+                      <button
+                        className="px-2 py-0.5 rounded border-red-300 border text-red-700 hover:bg-red-50 text-xs  transition"
+                        onClick={() => handleDeleteCity(idx)}
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -426,11 +427,11 @@ const handleEditCity = (idx: number) => {
               <tbody>
                 {cities[selectedCityIdx].districts.map((district, idx) => (
                   <tr key={idx} className="border-b">
-                    <td className="p-3 font-medium">{district.name}</td>
-                    <td className="p-3 font-medium">
+                    <td className="p-3 ">{district.name}</td>
+                    <td className="p-3 ">
                       {district.postalCodes.length}
                     </td>
-                    <td >
+                    <td>
                       <span
                         className={`inline-block text-center w-[60px] py-1 rounded-full text-xs font-semibold ${
                           district.active
@@ -444,22 +445,9 @@ const handleEditCity = (idx: number) => {
 
                     <td className="p-3 flex gap-2 justify-end">
                       <button
-                        className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs"
-                        onClick={() => handleEditDistrict(idx)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="px-2 py-0.5 rounded bg-red-50 text-red-700 hover:bg-red-100 text-xs"
-                        onClick={() => handleDeleteDistrict(idx)}
-                      >
-                        Delete
-                      </button>
-
-                      <button
-                        className={`w-[76px] py-0.5 rounded text-xs  transition ${
+                        className={`w-[76px] px-2 py-0.5 rounded   text-xs transition ${
                           district.active
-                            ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "border border-gray-300  text-gray-700 hover:bg-gray-100"
                             : "bg-gray-200 text-gray-500"
                         }`}
                         onClick={() => {
@@ -483,10 +471,23 @@ const handleEditCity = (idx: number) => {
                       </button>
 
                       <button
-                        className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs"
+                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
+                        onClick={() => handleEditDistrict(idx)}
+                      >
+                        Update
+                      </button>
+
+                      <button
+                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
                         onClick={() => setSelectedDistrictIdx(idx)}
                       >
-                        View Postal Codes
+                        Postal Codes
+                      </button>
+                      <button
+                        className="px-2 py-0.5 rounded border-red-300 border text-red-700 hover:bg-red-50 text-xs  transition"
+                        onClick={() => handleDeleteDistrict(idx)}
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -611,7 +612,6 @@ const handleEditCity = (idx: number) => {
                           key={dIdx}
                           className="flex flex-col bg-gray-50 rounded p-2 mb-2 gap-3 "
                         >
-
                           <div className="flex items-start justify-between -mt-2">
                             <span className="font-medium">{district.name}</span>
                             <button
@@ -629,7 +629,7 @@ const handleEditCity = (idx: number) => {
                               ×
                             </button>
                           </div>
-                          
+
                           {/* Postal Codes for this district */}
                           <div className="flex flex-wrap gap-1 ">
                             {district.postalCodes.map((pc, pIdx) => (
@@ -789,7 +789,7 @@ const handleEditCity = (idx: number) => {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!districtForm.name.trim()) return;
-                    
+
                     // Add district with postal codes
                     setCities((prev) =>
                       prev.map((city, cIdx) =>

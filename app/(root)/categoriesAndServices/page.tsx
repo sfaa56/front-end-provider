@@ -7,36 +7,56 @@ import React, { useRef, useState } from "react";
 const initialCategories = [
   {
     id: 1,
-    title: "Plumbing",
-    servicesCount: 5,
+    title: "Home Maintenance",
+    servicesCount: 4,
     services: [
-      "Leak Repair",
-      "Pipe Installation",
-      "Drain Cleaning",
-      "Water Heater",
-      "Toilet Repair",
+      "Plumbing",
+      "Electrical Fixes",
+      "AC Maintenance",
+      "Carpentry",
     ],
   },
   {
     id: 2,
-    title: "Electrical",
-    servicesCount: 8,
+    title: "Vehicle Services",
+    servicesCount: 4,
     services: [
-      "Wiring",
-      "Lighting",
-      "Circuit Breaker",
-      "Outlet Repair",
-      "Ceiling Fan",
-      "Generator",
-      "Panel Upgrade",
-      "Inspection",
+      "Car Wash",
+      "Oil Change",
+      "Tire Replacement",
+      "Engine Check",
     ],
   },
   {
     id: 3,
-    title: "Cleaning",
+    title: "Technical Support",
+    servicesCount: 4,
+    services: [
+      "Wi-Fi Setup",
+      "Computer Repair",
+      "Printer Installation",
+      "Data Recovery",
+    ],
+  },
+  {
+    id: 4,
+    title: "Consultation Services",
     servicesCount: 3,
-    services: ["Home Cleaning", "Office Cleaning", "Carpet Cleaning"],
+    services: [
+      "Business Consulting",
+      "Legal Advice",
+      "Financial Planning",
+    ],
+  },
+  {
+    id: 5,
+    title: "Home Improvement",
+    servicesCount: 3,
+    services: [
+      "Interior Painting",
+      "Furniture Assembly",
+      "Wallpaper Installation",
+    ],
   },
 ];
 
@@ -163,7 +183,8 @@ function Page() {
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="bg-white rounded-xl shadow p-5 transition hover:shadow-lg"
+              className="bg-white rounded-xl shadow p-5 transition hover:shadow-lg hover:cursor-pointer" 
+              onClick={()=> setExpandedId(expandedId === cat.id ? null : cat.id)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -175,24 +196,26 @@ function Page() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-medium transition"
-                    onClick={() => handleEdit(cat)}
+                    className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-medium transition"
+                    onClick={(e) => {e.stopPropagation(); handleEdit(cat)}}
                   >
                     Update
                   </button>
+           
                   <button
-                    className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs font-medium transition"
-                    onClick={() => handleDelete(cat.id)}
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className="px-3 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs font-medium transition"
+                    className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-medium transition"
                     onClick={() =>
                       setExpandedId(expandedId === cat.id ? null : cat.id)
                     }
                   >
                     {expandedId === cat.id ? "Hide Services" : "View Services"}
+                  </button>
+
+                         <button
+                    className="px-3 py-1 rounded border-red-300 border text-red-700 hover:bg-red-50 text-xs font-medium transition"
+                    onClick={() => handleDelete(cat.id)}
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
@@ -216,7 +239,7 @@ function Page() {
 
         {/* Add/Update Category Form */}
         <div className="w-full md:w-[600px]">
-          <div className="bg-white rounded-md shadow p-6">
+          <div className="bg-white rounded-xl shadow p-6">
             <h2 className="text-lg font-semibold mb-4 ">
               {editingId ? "Update Category" : "Add Category"}
             </h2>
@@ -234,35 +257,42 @@ function Page() {
                 />
               </div>
 
-              <div>
-                <Label className="text-sm ">Services</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {serviceTags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="flex items-center bg-secondary/10 text-secondary px-2 py-1 rounded-full text-xs"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        className="ml-1 text-secondary "
-                        onClick={() => handleRemoveTag(idx)}
-                        tabIndex={-1}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                <Input
-                  ref={serviceInputRef}
-                  type="text"
-                  placeholder="Type a service and press Enter"
-                  onKeyDown={handleServiceInput}
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
+<div>
+  <Label className="text-sm">Services</Label>
+  <div className="flex flex-col gap-2 mb-1">
+    {serviceTags.map((tag, idx) => (
+      <div key={idx} className="flex items-center gap-2">
+        <Input
+          type="text"
+          value={tag}
+          onChange={e => {
+            const updated = [...serviceTags];
+            updated[idx] = e.target.value;
+            setServiceTags(updated);
+          }}
+          className={`flex-1 border rounded px-2 py-1 text-xs transition ${
+            tag.trim() ? "bg-secondary/10" : ""
+          }`}
+        />
+        <button
+          type="button"
+          className="text-red-500 text-lg px-2"
+          onClick={() => handleRemoveTag(idx)}
+          tabIndex={-1}
+        >
+          ×
+        </button>
+      </div>
+    ))}
+  </div>
+  <Input
+    ref={serviceInputRef}
+    type="text"
+    placeholder="Type a service and press Enter"
+    onKeyDown={handleServiceInput}
+    className="w-full border rounded px-3 py-2"
+  />
+</div>
 
               <div className="flex gap-2">
                 <Button type="submit" variant={"submit"} className="h-10">
