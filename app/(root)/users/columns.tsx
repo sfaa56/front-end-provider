@@ -145,6 +145,7 @@ export const getColumns = (
         </div>
       ) : (
         <div className="text-center gap-2">
+          <Link href={"users/view/555"}>
           <button
             title="View User"
             className="p-2 rounded hover:bg-gray-100 text-blue-600"
@@ -153,7 +154,7 @@ export const getColumns = (
             }}
           >
             <FiEye />
-          </button>
+          </button></Link>
 
           <Link href={"users/update/555"}>
             <button
