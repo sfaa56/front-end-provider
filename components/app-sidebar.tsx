@@ -6,7 +6,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
-import { Briefcase, House, Mail, Settings } from "lucide-react";
+import { BarChart2, Briefcase, House, Mail, Settings } from "lucide-react";
 // import { Mail } from "lucide-react";
 import { Package2 } from "lucide-react";
 import { MapPinned } from "lucide-react";
@@ -56,6 +56,12 @@ const items = [
     url: "/payments/transaction",
     icon: <CreditCard />,
   },
+    {
+    title: "Reports & Analytics",
+    url: "/analytics",
+    icon: <BarChart2 />,
+  },
+
 
 
 
@@ -137,12 +143,9 @@ export function AppSidebar() {
     "/payments": "Payments",
     "/complaints": "Complaints & Support",
     "/biddingSettings": "Bidding Settings",
+    "/settings":"General Settings",
 
-    "/plans": "Package",
-    "/messages": "Messages",
-    "/amenities": "Amenities",
-    "/panners": "Panners",
-    "/requests": "Requests",
+    "/analytics":"Reports & Analytics",
 
     "/cms": "CMS Pages",
     "/blogs": "Blogs",

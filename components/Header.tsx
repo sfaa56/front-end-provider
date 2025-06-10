@@ -7,6 +7,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { useState, useRef } from "react";
 import { FiBell } from "react-icons/fi";
+import Link from "next/link";
 
 // ...other imports...
 
@@ -105,17 +106,20 @@ function Header() {
     ${open ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}
   `}
             >
+              <Link href={"/profile"}> 
               <button className="block w-full text-left px-4 py-2 hover:transition-transform hover:translate-x-1 hover:text-secondary transition-all duration-500 ">
                 Profile
-              </button>
+              </button></Link>
 
            <button className="block w-full text-left px-4 py-2 hover:transition-transform hover:translate-x-1 hover:text-secondary transition-all duration-500 ">
                 Messages
               </button>
 
+<Link href={"/settings"}>
               <button className="block w-full text-left px-4 py-2 hover:transition-transform hover:translate-x-1 hover:text-secondary transition-all duration-500  ">
                 Settings
               </button>
+    </Link>
 
               <div className=" h-[1px] mx-[18px] bg-gray-200"></div>
 
