@@ -14,7 +14,7 @@ export default function BiddingSettingsPage() {
   };
 
   return (
-    <div className="px-6 mx-auto p-6 bg-white rounded shadow">
+    <div className="mx-6 p-6 bg-white rounded-xl shadow">
       <h1 className="text-xl font-bold mb-10">Bidding System Settings</h1>
 
       {/* Enable Bidding System */}
