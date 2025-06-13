@@ -14,7 +14,7 @@ type Payload = {
 
 
 export async function createSession(accessToken: string) {
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  let expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   // const session = await encrypt({ id, expiresAt });
   try {
     // Set the session cookie
@@ -22,7 +22,6 @@ export async function createSession(accessToken: string) {
     cookieStore.set("session", accessToken, {
       expires: expiresAt,
       secure: process.env.NODE_ENV === "production",
-
       httpOnly: true,
     });
   } catch (error) {

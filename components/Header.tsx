@@ -8,14 +8,26 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import { useState, useRef } from "react";
 import { FiBell } from "react-icons/fi";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
+import { logoutUser } from "@/features/auth/authSlice";
+import {  useRouter } from "next/navigation";
 
 // ...other imports...
 
 function Header() {
-  const user = {
-    name: "John Doe",
-    avatar: "", // URL or leave empty for icon fallback
-  };
+  // const user = {
+  //   name: "John Doe",
+  //   avatar: "", // URL or leave empty for icon fallback
+  // };
+
+  const { user } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  const dispatch = useDispatch<AppDispatch>();
+  
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
@@ -78,21 +90,24 @@ function Header() {
 
         {/* User Dropdown */}
         <div className="relative flex gap-3 items-center" ref={menuRef}>
-          {user.avatar ? (
+          {/* {user?.avatar ? (
             <img
-              src={user.avatar}
+              src={user?.avatar||""}
               alt="User"
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
             <FaUserCircle className="w-8 h-8 text-gray-400" />
-          )}
+          )} */}
+
+           <FaUserCircle className="w-8 h-8 text-gray-400" />
 
           <button
-            className="flex items-center gap-1 text-sm font-medium focus:outline-none"
+            className="flex items-center gap-1 text-black text-sm font-medium focus:outline-none"
             onClick={() => setOpen((v) => !v)}
           >
-            {user.name}
+            {user?.name||"...."}
+
             <MdKeyboardArrowDown
               className={`text-lg transform transition-transform duration-200 ${
                 open ? "rotate-180" : ""
@@ -123,7 +138,7 @@ function Header() {
 
               <div className=" h-[1px] mx-[18px] bg-gray-200"></div>
 
-              <button className="block w-full text-left px-4 py-2 hover:transition-transform hover:translate-x-1 hover:text-secondary transition-all duration-500  ">
+              <button onClick={async()=>{await dispatch(logoutUser()); router.push('/sign-in')}} className="block w-full text-left px-4 py-2 hover:transition-transform hover:translate-x-1 hover:text-secondary transition-all duration-500  ">
                 Logout
               </button>
             </div>

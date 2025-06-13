@@ -12,10 +12,10 @@ function HydrateAuthState() {
 
   useEffect(() => {
     const user = localStorage.getItem('user');
-    const token = sessionStorage.getItem('token'); // optional if you use sessionStorage
+
 
     if (user) {
-      dispatch(setUserFromStorage({ user: JSON.parse(user), token }));
+      dispatch(setUserFromStorage({ user: JSON.parse(user) }));
     }
   }, [dispatch]);
 

@@ -1,8 +1,9 @@
 
 export interface User{
-    id:string;
+    _id?:string;
     name:string;
     email:string;
-    role:string;
-    token:string;
+    role?:string;
+    token?:string;
+    phoneNumber?:string;
 }

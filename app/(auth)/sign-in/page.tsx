@@ -3,12 +3,11 @@ import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { loginUser } from "@/features/auth/authSlice";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import {
   Form,
   FormControl,
@@ -18,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import { on } from "events";
+
 
 const formSchema = z.object({
   email: z.string().email({
@@ -52,8 +51,10 @@ function Page() {
 
       // Optional: Check if login was successful
       if (loginUser.fulfilled.match(resultAction)) {
+          const loggedInUser = resultAction.payload;
         console.log("Login successful!");
-        console.log("User data:", user);
+        console.log("User data:", loggedInUser);
+        router.push('/overview');
       } else {
         console.log("error", error);
         //  Get error directly from resultAction
@@ -72,11 +73,12 @@ function Page() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <div className="flex justify-center ">
-          <img
-            src="/logo/primary.jpeg"
-            alt="logo"
-            className="object-contain w-24 -mt-2 mb-4"
-          />
+        <div className="flex justify-center w-full mb-4">
+          <span className="text-2xl font-extrabold tracking-wide font-logo">
+            <span className="text-secondary">Pro</span>
+            <span className="text-tertiary/90">vider</span>
+          </span>
+        </div>
         </div>
 
         {/* Email Field */}

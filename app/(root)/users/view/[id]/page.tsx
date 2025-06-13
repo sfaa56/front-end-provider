@@ -135,7 +135,7 @@ function UserViewPage() {
               <div><span className="font-medium">Requests Made:</span> {user.requestsCount}</div>
             </>
           )}
-        </div>
+        </div>   
       )}
 
       {tab === "requests" && (

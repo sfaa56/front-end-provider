@@ -1,17 +1,40 @@
-"use client"
-import React, { useRef, useState } from "react";
+"use client";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { updateAdmin } from "@/features/auth/authSlice";
+import { AppDispatch, RootState } from "@/store/store";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
 function AdminProfilePage() {
+  const { user, error, loading } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  const dispatch = useDispatch<AppDispatch>();
+
   // Dummy admin data
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    email: "admin@yourdomain.com",
+    id: user?._id,
+    name: user?.name,
+    email: user?.email,
     role: "Administrator",
-    phone: "+966 555 123 456",
+    phoneNumber: user?.phoneNumber,
     avatar: "",
-    language: "English",
-    notifications: true,
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        ...user,
+      }));
+      setForm((prev) => ({
+        ...prev,
+        ...user,
+      }));
+    }
+  }, [user]);
 
   const [edit, setEdit] = useState(false);
   const [form, setForm] = useState(profile);
@@ -24,10 +47,9 @@ function AdminProfilePage() {
     { action: "Changed settings", date: "2024-06-08 18:22" },
     { action: "Exported report", date: "2024-06-07 14:10" },
   ]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle avatar change
   const handleAvatarClick = () => {
@@ -47,47 +69,111 @@ function AdminProfilePage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const validateProfile = () => {
+    const errs: { [key: string]: string } = {};
+    if (!form.name || form.name.trim().length < 3) {
+      errs.name = "Name is required and must be at least 3 characters.";
+    }
+    if (
+      !form.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ||
+      !form.email.endsWith(".com")
+    ) {
+      errs.email = "A valid email is required.";
+    }
+    if (form.phoneNumber && !/^\+?\d{7,15}$/.test(form.phoneNumber)) {
+      errs.phoneNumber = "Phone number is invalid.";
+    }
+    return errs;
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfile(form);
-    setEdit(false);
+    const validationErrors = validateProfile();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
+    try {
+      const resultAction = await dispatch(updateAdmin(form));
+
+      if (updateAdmin.fulfilled.match(resultAction)) {
+        const userupdated = resultAction.payload;
+        console.log(" successful!");
+        console.log("User data:", userupdated);
+        setEdit(false);
+      } else {
+        console.log("error", error);
+        //  Get error directly from resultAction
+        if (resultAction.payload) {
+          console.log("updated failed:", resultAction.payload); // e.g. { error: "Invalid credentials" }
+          toast("something went wrong");
+        }
+      }
+    } catch (error) {
+      console.log("Unexpected error during login:", error);
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
+  const validatePasswords = () => {
+    const errs: { [key: string]: string } = {};
+    if (!passwords.old) errs.old = "Old password required";
+    if (!passwords.new || passwords.new.length < 6)
+      errs.new = "New password must be at least 6 characters";
+    if (passwords.new !== passwords.confirm)
+      errs.confirm = "Passwords do not match";
+    return errs;
+  };
+
+  const [passwordErrors, setPasswordErrors] = useState<{
+    [key: string]: string;
+  }>({});
+
   const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     // Dummy: just close modal
+   
+    e.preventDefault();
+    const validationErrors = validatePasswords();
+    if (Object.keys(validationErrors).length > 0) {
+      setPasswordErrors(validationErrors);
+      return;
+    }
+    setPasswordErrors({});
     setShowChangePassword(false);
-    setPasswords({ old: "", new: "", confirm: "" });
-    alert("Password changed (dummy)");
   };
 
   return (
     <div className=" mx-6 p-8 bg-white rounded-xl shadow mb-10">
-      
-        <h1 className="text-gray-600 font-semibold text-xl font-sans  mb-6">
-          Admin Profile
-        </h1>
-    
+      <h1 className="text-gray-600 font-semibold text-xl font-sans  mb-6">
+        Admin Profile
+      </h1>
 
       {/* Basic Info */}
-       <div className="flex flex-row items-center mb-6 gap-6">
+      <div className="flex flex-row items-center mb-6 gap-6">
         <div
           className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-4xl text-gray-400 mb-2 cursor-pointer hover:ring-2 hover:ring-secondary transition"
           title="Click to change avatar"
           onClick={handleAvatarClick}
         >
           {profile.avatar ? (
-            <img src={profile.avatar} alt="avatar" className="w-full h-full rounded-full object-cover" />
+            <img
+              src={profile.avatar}
+              alt="avatar"
+              className="w-full h-full rounded-full object-cover"
+            />
           ) : (
-            profile.name[0]
+            profile?.name?.[0] ?? ""
           )}
           <input
             ref={fileInputRef}
@@ -97,9 +183,11 @@ function AdminProfilePage() {
             onChange={handleAvatarChange}
           />
         </div>
-        <div className="flex flex-col">        <div className="text-lg font-semibold">{profile.name}</div>
-        <div className="text-gray-500">{profile.role}</div></div>
-
+        <div className="flex flex-col">
+          {" "}
+          <div className="text-lg font-semibold">{profile.name}</div>
+          <div className="text-gray-500">{profile.role}</div>
+        </div>
       </div>
       <div className="space-y-8">
         {/* Basic Info Section */}
@@ -116,6 +204,9 @@ function AdminProfilePage() {
                   onChange={handleChange}
                   required
                 />
+                {errors.name && (
+                  <span className="text-red-500 text-xs">{errors.name}</span>
+                )}
               </div>
               <div>
                 <label className="block mb-1 font-medium">Email</label>
@@ -127,38 +218,25 @@ function AdminProfilePage() {
                   onChange={handleChange}
                   required
                 />
+                {errors.email && (
+                  <span className="text-red-500 text-xs">{errors.email}</span>
+                )}
               </div>
               <div>
                 <label className="block mb-1 font-medium">Phone</label>
                 <input
                   className="w-full border rounded px-3 py-2"
-                  name="phone"
-                  value={form.phone}
+                  name="phoneNumber"
+                  value={form.phoneNumber}
                   onChange={handleChange}
                 />
+                {errors.phoneNumber && (
+                  <span className="text-red-500 text-xs">
+                    {errors.phoneNumber}
+                  </span>
+                )}
               </div>
-              <div>
-                <label className="block mb-1 font-medium">Language</label>
-                <select
-                  className="w-full border rounded px-3 py-2"
-                  name="language"
-                  value={form.language}
-                  onChange={handleChange}
-                >
-                  <option value="English">English</option>
-                  <option value="Arabic">Arabic</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="notifications"
-                  checked={form.notifications}
-                  onChange={e => setForm(f => ({ ...f, notifications: e.target.checked }))}
-                  className="accent-secondary w-5 h-5"
-                />
-                <label>Enable notifications</label>
-              </div>
+
               <div className="flex gap-3 mt-4">
                 <button
                   type="button"
@@ -170,32 +248,32 @@ function AdminProfilePage() {
                 <button
                   type="submit"
                   className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90"
+                   
+      disabled={loading}
                 >
-                  Save
+                     {loading ? <LoadingSpinner size={18} color="#fff" /> : "Save"}
                 </button>
               </div>
             </form>
           ) : (
             <div className="space-y-3 ">
               <div className="flex">
-                <span className="font-medium w-[115px]">Name</span> {profile.name}
+                <span className="font-medium w-[115px]">Name</span>{" "}
+                {profile.name}
               </div>
               <div className="flex">
-                <span className="font-medium w-[115px]">Email</span> {profile.email}
+                <span className="font-medium w-[115px]">Email</span>{" "}
+                {profile.email}
               </div>
               <div className="flex">
-                <span className="font-medium w-[115px]">Phone</span> {profile.phone}
+                <span className="font-medium w-[115px]">Phone</span>{" "}
+                {profile.phoneNumber}
               </div>
               <div className="flex">
-                <span className="font-medium w-[115px]">Role</span> {profile.role}
+                <span className="font-medium w-[115px]">Role</span>{" "}
+                {profile.role}
               </div>
-              <div className="flex">
-                <span className="font-medium w-[115px]">Language</span> {profile.language}
-              </div>
-              <div className="flex mb-10">
-                <span className="font-medium w-[115px]">Notifications</span>{" "}
-                {profile.notifications ? "Enabled" : "Disabled"}
-              </div>
+
               <div className="flex gap-3 ">
                 <button
                   className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary/90"
@@ -216,7 +294,9 @@ function AdminProfilePage() {
         {/* Change Password Section */}
         {showChangePassword && (
           <section className="border-t pt-6">
-            <h2 className="font-semibold mb-2 text-secondary">Change Password</h2>
+            <h2 className="font-semibold mb-2 text-secondary">
+              Change Password
+            </h2>
             <form onSubmit={handlePasswordSubmit} className="space-y-3">
               <div>
                 <label className="block mb-1 font-medium">Old Password</label>
@@ -228,6 +308,8 @@ function AdminProfilePage() {
                   onChange={handlePasswordChange}
                   required
                 />
+                 {passwordErrors.old && <span className="text-red-500 text-xs">{passwordErrors.old}</span>}
+
               </div>
               <div>
                 <label className="block mb-1 font-medium">New Password</label>
@@ -239,9 +321,13 @@ function AdminProfilePage() {
                   onChange={handlePasswordChange}
                   required
                 />
+                 {passwordErrors.new && <span className="text-red-500 text-xs">{passwordErrors.new}</span>}
+
               </div>
               <div>
-                <label className="block mb-1 font-medium">Confirm New Password</label>
+                <label className="block mb-1 font-medium">
+                  Confirm New Password
+                </label>
                 <input
                   className="w-full border rounded px-3 py-2"
                   name="confirm"
@@ -251,6 +337,8 @@ function AdminProfilePage() {
                   required
                 />
               </div>
+                 {passwordErrors.confirm && <span className="text-red-500 text-xs">{passwordErrors.confirm}</span>}
+
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -259,6 +347,7 @@ function AdminProfilePage() {
                   className="accent-secondary w-5 h-5"
                   id="showPass"
                 />
+
                 <label htmlFor="showPass">Show Passwords</label>
               </div>
               <div className="flex gap-3 mt-2">
@@ -279,36 +368,7 @@ function AdminProfilePage() {
             </form>
           </section>
         )}
-        {/* Preferences Section */}
-        <section className="border-t pt-6">
-          <h2 className="font-semibold mb-2 text-secondary">Preferences</h2>
-          <div>
-            <span className="font-medium">Language:</span> {profile.language}
-          </div>
-          <div>
-            <span className="font-medium">Notifications:</span>{" "}
-            {profile.notifications ? "Enabled" : "Disabled"}
-          </div>
-        </section>
-        {/* 2FA Section */}
-        <section className="border-t pt-6">
-          <h2 className="font-semibold mb-2 text-secondary">Two-Factor Authentication</h2>
-          <div>
-            <span className="font-medium">Status:</span>{" "}
-            <span className="text-green-600">Enabled</span> {/* Dummy */}
-          </div>
-          <button
-            className="mt-2 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-            onClick={() => setShow2FA((v) => !v)}
-          >
-            {show2FA ? "Hide 2FA Details" : "Show 2FA Details"}
-          </button>
-          {show2FA && (
-            <div className="mt-2 text-sm text-gray-600">
-              2FA is enabled for your account. For extra security, use your authenticator app when logging in.
-            </div>
-          )}
-        </section>
+
         {/* Activity Log Section */}
         <section className="border-t pt-6">
           <h2 className="font-semibold mb-2 text-secondary">Activity Log</h2>
