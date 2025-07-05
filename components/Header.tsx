@@ -90,17 +90,17 @@ function Header() {
 
         {/* User Dropdown */}
         <div className="relative flex gap-3 items-center" ref={menuRef}>
-          {/* {user?.avatar ? (
+          {user?.image?.url ? (
             <img
-              src={user?.avatar||""}
+              src={user?.image?.url ||""}
               alt="User"
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
             <FaUserCircle className="w-8 h-8 text-gray-400" />
-          )} */}
+          )}
 
-           <FaUserCircle className="w-8 h-8 text-gray-400" />
+           {/* <FaUserCircle className="w-8 h-8 text-gray-400" /> */}
 
           <button
             className="flex items-center gap-1 text-black text-sm font-medium focus:outline-none"

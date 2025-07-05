@@ -8,6 +8,7 @@ import { handleLogin, handleLogout } from "@/lib/actions/auth";
 interface AuthState {
   user: User | null;
   loading: boolean;
+  passwordLoading: boolean;
   error: string | null;
   token: string | null;
 }
@@ -15,10 +16,12 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   loading: false,
+  passwordLoading: false,
   error: null,
   token: null,
 };
 
+// what the thunk will eventually return,  // type of the argument (payload)
 export const loginUser = createAsyncThunk<User, authApi.LoginPayload>(
   "auth/login",
   async (data, thunkAPI) => {
@@ -60,9 +63,35 @@ export const updateAdmin = createAsyncThunk<User, authApi.UpdatePayload>(
       return response;
     } catch (error: any) {
       console.log("login error", error);
-      return thunkAPI.rejectWithValue(
-         error?.message || "Login failed"
-      );
+      return thunkAPI.rejectWithValue(error?.message || "Login failed");
+    }
+  }
+);
+
+export const password = createAsyncThunk<string, authApi.changePasswordPayload>(
+  "auth/password",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await authApi.changePassword(data);
+    } catch (error) {
+      console.error("Change password error", error);
+      return rejectWithValue("Change Password failed");
+    }
+  }
+);
+
+export const picture = createAsyncThunk<User, authApi.picture>(
+  "auth/picture",
+  async (data, { rejectWithValue }) => {
+    try {
+    const res = await authApi.picture(data);
+      localStorage.setItem("user", JSON.stringify(res));
+    
+      return res
+
+    } catch (error) {
+      console.error("Change password error", error);
+      return rejectWithValue("Change Password failed");
     }
   }
 );
@@ -105,6 +134,19 @@ const authSlice = createSlice({
       .addCase(updateAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(password.pending, (state) => {
+        state.passwordLoading = false;
+        state.error = null;
+      })
+      .addCase(password.fulfilled, (state) => {
+        state.passwordLoading = false;
+      })
+      .addCase(password.rejected, (state, action) => {
+        state.passwordLoading = false;
+        state.error = action.payload as string;
+      }).addCase(picture.fulfilled,(state,action)=>{
+         state.user=action.payload
       });
   },
 });

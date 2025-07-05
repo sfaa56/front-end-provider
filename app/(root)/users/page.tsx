@@ -3,6 +3,8 @@ import React, { useEffect } from "react";
 import { getColumns } from "./columns";
 // import { PropertyFormModal } from './city-form'
 import { DataTable } from "./data-table";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 // import { useSharedState } from '@/app/context/state-provider'
 
 export default function Page() {
@@ -77,8 +79,9 @@ const users = [
 
   return (
     <div className="px-6 ">
-      <div className="flex w-full items-end ">
+      <div className="flex w-full items-center justify-between mb-1">
         <h1 className="text-black-200 font-semibold text-xl font-sans  mb-4">Users Management</h1>
+      <Link href={"/users/add"} > <Button className="rounded-sm text-white " variant={"secondary"}>+ User</Button></Link>
       </div>
 
       <DataTable   data={users} />

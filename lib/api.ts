@@ -6,6 +6,7 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   }, 
    withCredentials: true,
+ 
 });
 
 export const fetchData = async (endpoint: string) => {

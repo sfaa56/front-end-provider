@@ -19,6 +19,17 @@ interface userReturnRequest {
     token: string;
 }
 
+export interface changePasswordPayload{
+  oldPassword:string;
+  newPassword:string;
+  confirmPassword:string;
+}
+
+export interface picture{
+  imageUrl:string,
+  publicId:string
+}
+
 export const login = async (data: LoginPayload): Promise<userReturnRequest> => {
   const response = await apiClient.post("/auth/login", data);
   return response.data;
@@ -31,4 +42,15 @@ export const logout = async ()=>{
 export const update = async (data: UpdatePayload): Promise<User> => {
   const response = await apiClient.put(`/users/${data._id}`, data);
   return response.data;
+}
+
+export const changePassword = async (data:changePasswordPayload):Promise<string>=>{
+  const response = await apiClient.put("/auth/password",data)
+  console.log("response in authApi",response.data)
+  return response.data
+}
+
+export const picture = async (data:picture):Promise<User>=>{
+  const response = await apiClient.put("/users/picture/upload",data);
+  return response.data.user
 }

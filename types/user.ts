@@ -6,4 +6,5 @@ export interface User{
     role?:string;
     token?:string;
     phoneNumber?:string;
+    image:{url:string,publicId:string}
 }

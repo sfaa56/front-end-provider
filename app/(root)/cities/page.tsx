@@ -1,68 +1,35 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { City, District, PostalCode } from "@/types/cities";
+import StatusBadge from "@/components/StatusBadge";
+import ActionButton from "@/components/ActionButton";
+import CityForm from "@/components/cities/CityForm";
+import DistrictForm from "@/components/cities/DistrictForm";
+import PostalCodeForm from "@/components/cities/PostalCodeForm";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
 
-// Types
-type PostalCode = { code: string; active: boolean };
-type District = {
+interface districtFormProps {
   name: string;
-  active: boolean;
   postalCodes: PostalCode[];
-  newPostalCode?: string;
-};
-type City = { name: string; active: boolean; districts: District[] };
-
-// Initial Data
-const initialCities: City[] = [
-  {
-    name: "City A",
-    active: true,
-    districts: [
-      {
-        active: true,
-        name: "District 1",
-        postalCodes: [
-          { active: true, code: "10001" },
-          { active: true, code: "10002" },
-        ],
-      },
-      {
-        active: true,
-        name: "District 2",
-        postalCodes: [{ active: true, code: "10003" }],
-      },
-    ],
-  },
-  {
-    name: "City B",
-    active: false,
-    districts: [
-      {
-        active: true,
-        name: "District 3",
-        postalCodes: [{ active: true, code: "20001" }],
-      },
-    ],
-  },
-];
+  active: boolean;
+}
 
 function Page() {
   // State
-  const [cities, setCities] = useState<City[]>(initialCities);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+
   const [selectedCityIdx, setSelectedCityIdx] = useState<number | null>(null);
   const [selectedDistrictIdx, setSelectedDistrictIdx] = useState<number | null>(
     null
   );
 
-  const [districtPostalCodes, setDistrictPostalCodes] = useState<string[]>([]);
-  const [newDistrictPostal, setNewDistrictPostal] = useState("");
-
   // City form
   const [cityForm, setCityForm] = useState<{
     name: string;
-    districts: District[];
+    districts: districtFormProps[];
     newDistrict: string;
   }>({
     name: "",
@@ -76,94 +43,219 @@ function Page() {
   const [editingDistrictIdx, setEditingDistrictIdx] = useState<number | null>(
     null
   );
+  const [districtPostalCodes, setDistrictPostalCodes] = useState<string[]>([]);
+  const [newDistrictPostal, setNewDistrictPostal] = useState("");
 
   // Postal code form
   const [postalForm, setPostalForm] = useState({ code: "" });
   const [editingPostalIdx, setEditingPostalIdx] = useState<number | null>(null);
 
-  // --- City Handlers ---
-  const handleCitySubmit = (e: React.FormEvent) => {
+  // Fetch cities
+  useEffect(() => {
+    const fetchCities = async () => {
+      setLoadingCities(true);
+      try {
+        const response = await apiClient("/cities");
+        if (response.status === 200) {
+          setCities(response.data);
+        }
+      } catch (error) {
+        toast.error("Error fetching cities");
+      }
+      setLoadingCities(false);
+    };
+    fetchCities();
+  }, []);
+
+  // Cities
+  const handleCitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cityForm.name.trim()) return;
-    if (editingCityIdx !== null) {
-      setCities((prev) =>
-        prev.map((c, idx) =>
-          idx === editingCityIdx ? { ...c, name: cityForm.name } : c
-        )
-      );
-      setEditingCityIdx(null);
-    } else {
-      setCities([
-        ...cities,
-        { name: cityForm.name, active: true, districts: [] },
-      ]);
+
+    setFormLoading(true);
+    try {
+      if (editingCityIdx !== null) {
+        // Update existing city
+        const cityId = cities[editingCityIdx]._id;
+        const response = await apiClient.put(`/cities/${cityId}`, {
+          name: cityForm.name,
+          districts: cityForm.districts.map((d) => ({
+            name: d.name,
+            active: true,
+            postalCodes: d.postalCodes.map((code) => ({
+              code: code.code,
+              active: true,
+            })),
+          })),
+        });
+        if (response.status === 200) {
+          setCities((prev) =>
+            prev.map((c, idx) =>
+              idx === editingCityIdx
+                ? { ...c, name: cityForm.name, districts: cityForm.districts }
+                : c
+            )
+          );
+          toast.success("City updated successfully");
+        }
+      } else {
+        // Add new city
+        const response = await apiClient.post("/cities", {
+          name: cityForm.name,
+          districts: cityForm.districts.map((d) => ({
+            name: d.name,
+            active: true,
+            postalCodes: d.postalCodes.map((code) => ({
+              code: code.code,
+              active: true,
+            })),
+          })),
+        });
+        if (response.status === 201) {
+          setCities((prev) => [...prev, response.data]);
+          toast.success("City added successfully");
+        }
+      }
+    } catch (error) {
+      toast.error("Error saving city");
     }
     setCityForm({ name: "", districts: [], newDistrict: "" });
+    setEditingCityIdx(null);
+    setFormLoading(false);
   };
 
-  const handleEditCity = (idx: number) => {
+  const startCityEdit = (idx: number) => {
     setCityForm({
       name: cities[idx].name,
       districts: cities[idx].districts.map((d) => ({
         ...d,
-        newPostalCode: "",
+        newPostalCode: null,
       })),
       newDistrict: "",
     });
     setEditingCityIdx(idx);
   };
 
-  const handleDeleteCity = (idx: number) => {
-    setCities((prev) => prev.filter((_, i) => i !== idx));
+  const handleDeleteCity = async (idx: number) => {
+    try {
+      const CityId = cities[idx]._id;
+      const response = await apiClient.delete(`/cities/${CityId}`);
+      if (response.status === 200) {
+        setCities((prev) => prev.filter((_, i) => i !== idx));
+        toast.success("City deleted successfully");
+      }
+    } catch (error) {
+      toast.error("Error deleting city");
+    }
     setEditingCityIdx(null);
     setCityForm({ name: "", districts: [], newDistrict: "" });
   };
 
-  const handleToggleCityActive = (idx: number) => {
-    setCities((prev) =>
-      prev.map((c, i) => (i === idx ? { ...c, active: !c.active } : c))
-    );
+  const handleToggleCityActive = async (idx: number) => {
+    try {
+      const cityId = cities[idx]._id;
+      const city = cities[idx];
+      const response = await apiClient.put(`/cities/${cityId}`, {
+        name: city.name,
+        active: !city.active,
+        districts: city.districts,
+      });
+      if (response.status === 200) {
+        setCities((prev) =>
+          prev.map((c, i) => (i === idx ? { ...c, active: !c.active } : c))
+        );
+        toast.success(`City ${city.active ? "deactivated" : "activated"}`);
+      }
+    } catch (error) {
+      toast.error("Error toggling city status");
+    }
   };
 
-  // --- District Handlers ---
-  // const handleDistrictSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (selectedCityIdx === null || !districtForm.name.trim()) return;
-  //   if (editingDistrictIdx !== null) {
-  //     setCities((prev) =>
-  //       prev.map((city, cIdx) =>
-  //         cIdx === selectedCityIdx
-  //           ? {
-  //               ...city,
-  //               districts: city.districts.map((d, dIdx) =>
-  //                 dIdx === editingDistrictIdx
-  //                   ? { ...d, name: districtForm.name }
-  //                   : d
-  //               ),
-  //             }
-  //           : city
-  //       )
-  //     );
-  //     setEditingDistrictIdx(null);
-  //   } else {
-  //     setCities((prev) =>
-  //       prev.map((city, cIdx) =>
-  //         cIdx === selectedCityIdx
-  //           ? {
-  //               ...city,
-  //               districts: [
-  //                 ...city.districts,
-  //                 { name: districtForm.name, postalCodes: [] },
-  //               ],
-  //             }
-  //           : city
-  //       )
-  //     );
-  //   }
-  //   setDistrictForm({ name: "" });
-  // };
+  // Districts
+  const handleDistrictSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedCityIdx === null || !districtForm.name.trim()) return;
 
-  const handleEditDistrict = (idx: number) => {
+    setFormLoading(true);
+    const cityId = cities[selectedCityIdx]._id;
+    const districtId = cities[selectedCityIdx].districts[editingDistrictIdx || 0]?._id;
+    try {
+      if (editingDistrictIdx !== null) {
+        // Update existing district
+        const response = await apiClient.put(
+          `/cities/${cityId}/districts/${districtId}`,
+          {
+            name: districtForm.name,
+            active: true,
+            postalCodes: districtPostalCodes.map((code) => ({
+              code,
+              active: true,
+            })),
+          }
+        );
+        if (response.status === 201) {
+          setCities((prev) =>
+            prev.map((city, cIdx) =>
+              cIdx === selectedCityIdx
+                ? {
+                    ...city,
+                    districts: city.districts.map((d, dIdx) =>
+                      dIdx === editingDistrictIdx
+                        ? {
+                            ...d,
+                            active: true,
+                            name: districtForm.name,
+                            postalCodes: districtPostalCodes.map((code) => ({
+                              code,
+                              active: true,
+                            })),
+                          }
+                        : d
+                    ),
+                  }
+                : city
+            )
+          );
+          toast.success("District updated successfully");
+        }
+      } else {
+        // Add new district
+        const response = await apiClient.post(`/cities/${cityId}/districts`, {
+          name: districtForm.name,
+          active: true,
+          postalCodes: districtPostalCodes.map((code) => ({
+            code,
+            active: true,
+          })),
+        });
+        if (response.status === 201) {
+          setCities((prev) =>
+            prev.map((city, cIdx) =>
+              cIdx === selectedCityIdx
+                ? {
+                    ...city,
+                    districts: [
+                      ...city.districts,
+                      response.data, // Use the response data for the new district
+                    ],
+                  }
+                : city
+            )
+          );
+          toast.success("District added successfully");
+        }
+      }
+    } catch (error) {
+      toast.error("Error saving district");
+    }
+    setDistrictForm({ name: "" });
+    setDistrictPostalCodes([]);
+    setNewDistrictPostal("");
+    setEditingDistrictIdx(null);
+    setFormLoading(false);
+  };
+
+  const startDistrictEdit = (idx: number) => {
     if (selectedCityIdx === null) return;
     const district = cities[selectedCityIdx].districts[idx];
     setDistrictForm({ name: district.name });
@@ -172,24 +264,79 @@ function Page() {
     setEditingDistrictIdx(idx);
   };
 
-  const handleDeleteDistrict = (idx: number) => {
+  const handleDeleteDistrict = async (idx: number) => {
     if (selectedCityIdx === null) return;
-    setCities((prev) =>
-      prev.map((city, cIdx) =>
-        cIdx === selectedCityIdx
-          ? {
-              ...city,
-              districts: city.districts.filter((_, dIdx) => dIdx !== idx),
-            }
-          : city
-      )
-    );
+
+    const cityId = cities[selectedCityIdx]._id;
+    const districtId = cities[selectedCityIdx].districts[idx]._id;
+    try {
+      const response = await apiClient.delete(
+        `/cities/${cityId}/districts/${districtId}`
+      );
+      if (response.status === 200) {
+        setCities((prev) =>
+          prev.map((city, cIdx) =>
+            cIdx === selectedCityIdx
+              ? {
+                  ...city,
+                  districts: city.districts.filter((_, dIdx) => dIdx !== idx),
+                }
+              : city
+          )
+        );
+        toast.success("District deleted successfully");
+      }
+    } catch (error) {
+      toast.error("Error deleting district");
+    }
     setEditingDistrictIdx(null);
     setDistrictForm({ name: "" });
+    setDistrictPostalCodes([]);
+    setNewDistrictPostal("");
+
   };
 
-  // --- Postal Code Handlers ---
-  const handlePostalSubmit = (e: React.FormEvent) => {
+  const handleToggleDistrictActive = async (idx: number) => {
+    if (selectedCityIdx === null) return;
+    
+    const cityId = cities[selectedCityIdx]._id;
+    const district = cities[selectedCityIdx].districts[idx];
+    const districtId = cities[selectedCityIdx].districts[idx || 0]?._id;
+
+    try {
+      const response = await apiClient.put(
+        `/cities/${cityId}/districts/${districtId}`,
+        {
+          name: district.name,
+          active: !district.active,
+          postalCodes: district.postalCodes,
+        }
+      );
+      if (response.status === 201) {
+        setCities((prev) =>
+          prev.map((city, cIdx) =>
+            cIdx === selectedCityIdx
+              ? {
+                  ...city,
+                  districts: city.districts.map((d, dIdx) =>
+                    dIdx === idx ? { ...d, active: !d.active } : d
+                  ),
+                }
+              : city
+          )
+        );
+        toast.success(
+          `District ${district.active ? "deactivated" : "activated"}`
+        );
+      }
+    } catch (error) {
+      toast.error("Error toggling district status");
+    }
+    
+  };
+
+  // Postal codes
+  const handlePostalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       selectedCityIdx === null ||
@@ -197,55 +344,94 @@ function Page() {
       !postalForm.code.trim()
     )
       return;
-    if (editingPostalIdx !== null) {
-      setCities((prev) =>
-        prev.map((city, cIdx) =>
-          cIdx === selectedCityIdx
-            ? {
-                ...city,
-                districts: city.districts.map((district, dIdx) =>
-                  dIdx === selectedDistrictIdx
-                    ? {
-                        ...district,
-                        postalCodes: district.postalCodes.map((p, pIdx) =>
-                          pIdx === editingPostalIdx
-                            ? { ...p, code: postalForm.code, active: p.active }
-                            : p
-                        ),
-                      }
-                    : district
-                ),
-              }
-            : city
-        )
-      );
-      setEditingPostalIdx(null);
-    } else {
-      setCities((prev) =>
-        prev.map((city, cIdx) =>
-          cIdx === selectedCityIdx
-            ? {
-                ...city,
-                districts: city.districts.map((district, dIdx) =>
-                  dIdx === selectedDistrictIdx
-                    ? {
-                        ...district,
-                        postalCodes: [
-                          ...district.postalCodes,
-                          { code: postalForm.code, active: true },
-                        ],
-                      }
-                    : district
-                ),
-              }
-            : city
-        )
-      );
+
+    setFormLoading(true);
+    const cityId = cities[selectedCityIdx]._id;
+    const districtIdx = selectedDistrictIdx;
+    const districtId =
+      cities[selectedCityIdx].districts[selectedDistrictIdx]?._id;
+    const postalCodeId = 
+      cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[
+        editingPostalIdx || 0
+      ]?._id;
+
+
+    try {
+      if (editingPostalIdx !== null) {
+        // Update postal code
+        const response = await apiClient.put(
+          `/cities/${cityId}/districts/${districtId}/postalCodes/${postalCodeId}`,
+          {
+            code: postalForm.code,
+            active: true,
+          }
+        );
+        if (response.status === 200) {
+          setCities((prev) =>
+            prev.map((city, cIdx) =>
+              cIdx === selectedCityIdx
+                ? {
+                    ...city,
+                    districts: city.districts.map((district, dIdx) =>
+                      dIdx === selectedDistrictIdx
+                        ? {
+                            ...district,
+                            postalCodes: district.postalCodes.map((p, pIdx) =>
+                              pIdx === editingPostalIdx
+                                ? { ...p, code: postalForm.code, active: true }
+                                : p
+                            ),
+                          }
+                        : district
+                    ),
+                  }
+                : city
+            )
+          );
+          toast.success("Postal code updated successfully");
+        }
+        setEditingPostalIdx(null);
+      } else {
+        // Add new postal code
+        const response = await apiClient.post(
+          `/cities/${cityId}/districts/${districtId}/postalCodes`,
+          {
+            code: postalForm.code,
+            active: true,
+          }
+        );
+        if (response.status === 201) {
+          setCities((prev) =>
+            prev.map((city, cIdx) =>
+              cIdx === selectedCityIdx
+                ? {
+                    ...city,
+                    districts: city.districts.map((district, dIdx) =>
+                      dIdx === selectedDistrictIdx
+                        ? {
+                            ...district,
+                            postalCodes: [
+                              ...district.postalCodes,
+                              response.data,
+                            ],
+                          }
+                        : district
+                    ),
+                  }
+                : city
+            )
+          );
+          toast.success("Postal code added successfully");
+        }
+      }
+    } catch (error) {
+      toast.error("Error saving postal code");
     }
     setPostalForm({ code: "" });
+    setFormLoading(false);
   };
 
-  const handleEditPostal = (idx: number) => {
+  const startPostalEdit = (idx: number) => {
     if (selectedCityIdx === null || selectedDistrictIdx === null) return;
     setPostalForm({
       code: cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[
@@ -255,29 +441,90 @@ function Page() {
     setEditingPostalIdx(idx);
   };
 
-  const handleDeletePostal = (idx: number) => {
+  const handleDeletePostal = async (idx: number) => {
     if (selectedCityIdx === null || selectedDistrictIdx === null) return;
-    setCities((prev) =>
-      prev.map((city, cIdx) =>
-        cIdx === selectedCityIdx
-          ? {
-              ...city,
-              districts: city.districts.map((district, dIdx) =>
-                dIdx === selectedDistrictIdx
-                  ? {
-                      ...district,
-                      postalCodes: district.postalCodes.filter(
-                        (_, pIdx) => pIdx !== idx
-                      ),
-                    }
-                  : district
-              ),
-            }
-          : city
-      )
-    );
+    const cityId = cities[selectedCityIdx]._id;
+    const districtIdx = selectedDistrictIdx;
+    const postalIdx = idx;
+    const districtId =
+      cities[selectedCityIdx].districts[selectedDistrictIdx]?._id;
+    const postalId =
+      cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[idx]?._id;
+
+    try {
+      const response = await apiClient.delete(
+        `/cities/${cityId}/districts/${districtId}/postalCodes/${postalId}`
+      );
+      if (response.status === 200) {
+        setCities((prev) =>
+          prev.map((city, cIdx) =>
+            cIdx === selectedCityIdx
+              ? {
+                  ...city,
+                  districts: city.districts.map((district, dIdx) =>
+                    dIdx === selectedDistrictIdx
+                      ? {
+                          ...district,
+                          postalCodes: district.postalCodes.filter(
+                            (_, pIdx) => pIdx !== idx
+                          ),
+                        }
+                      : district
+                  ),
+                }
+              : city
+          )
+        );
+        toast.success("Postal code deleted successfully");
+      }
+    } catch (error) {
+      toast.error("Error deleting postal code");
+    }
     setEditingPostalIdx(null);
     setPostalForm({ code: "" });
+  };
+
+  const handleTogglePostalActive = async (idx: number) => {
+    if (selectedCityIdx === null || selectedDistrictIdx === null) return;
+    const cityId = cities[selectedCityIdx]._id;
+    const districtIdx = selectedDistrictIdx;
+    const postal =
+      cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[idx];
+    try {
+      const response = await apiClient.put(
+        `/cities/${cityId}/districts/${districtIdx}/postalCodes/${idx}`,
+        {
+          code: postal.code,
+          active: !postal.active,
+        }
+      );
+      if (response.status === 200) {
+        setCities((prev) =>
+          prev.map((city, cIdx) =>
+            cIdx === selectedCityIdx
+              ? {
+                  ...city,
+                  districts: city.districts.map((district, dIdx) =>
+                    dIdx === selectedDistrictIdx
+                      ? {
+                          ...district,
+                          postalCodes: district.postalCodes.map((p, pIdx) =>
+                            pIdx === idx ? { ...p, active: !p.active } : p
+                          ),
+                        }
+                      : district
+                  ),
+                }
+              : city
+          )
+        );
+        toast.success(
+          `Postal code ${postal.active ? "deactivated" : "activated"}`
+        );
+      }
+    } catch (error) {
+      toast.error("Error toggling postal code status");
+    }
   };
 
   // --- Breadcrumb ---
@@ -288,19 +535,17 @@ function Page() {
           Regions & Cities
         </h1>
       )}
-
       {(selectedCityIdx !== null || selectedDistrictIdx !== null) && (
         <span
-          className={`lex w-full items-end`}
+          className="lex w-full items-end"
           onClick={() => {
             setSelectedCityIdx(null);
             setSelectedDistrictIdx(null);
           }}
         >
-          <span className="hover:underline cursor-pointer "> Regions</span>
+          <span className="hover:underline cursor-pointer"> Regions</span>
         </span>
       )}
-
       {selectedCityIdx !== null && (
         <>
           <span className="mx-2">{">"}</span>
@@ -314,7 +559,6 @@ function Page() {
           </span>
         </>
       )}
-
       {selectedDistrictIdx !== null && selectedCityIdx !== null && (
         <>
           <span className="mx-2">{">"}</span>
@@ -334,12 +578,17 @@ function Page() {
       </div>
 
       <div className="mx-auto flex flex-col md:flex-row gap-8 justify-start">
-        <div className="flex-1 ">
+        <div className="flex-1">
           {/* Cities Table */}
-          {selectedCityIdx === null ? (
+          {loadingCities ? (
+            <div className="w-full flex justify-center items-center min-h-[200px]">
+              <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-secondary rounded-full" />
+              <span className="ml-2 text-secondary">Loading...</span>
+            </div>
+          ) : selectedCityIdx === null ? (
             <table className="w-full bg-white rounded-xl shadow overflow-hidden">
               <thead>
-                <tr className="bg-gray-50 border-b ">
+                <tr className="bg-gray-50 border-b">
                   <th className="p-3 text-left font-normal">City</th>
                   <th className="p-3 text-left font-normal">Districts</th>
                   <th className="p-3 text-left font-normal">Postal Codes</th>
@@ -349,65 +598,46 @@ function Page() {
               </thead>
               <tbody>
                 {cities.map((city, idx) => (
-                  <tr key={idx} className="border-b ">
+                  <tr key={idx} className="border-b">
                     <td className="p-3 font-semibold">{city.name}</td>
-
-                    <td className="p-3 ">{city.districts.length}</td>
-
-                    <td className="p-3 ">
+                    <td className="p-3">{city.districts.length}</td>
+                    <td className="p-3">
                       {city.districts.reduce(
                         (sum, d) => sum + d.postalCodes.length,
                         0
                       )}
                     </td>
-
                     <td className="p-3">
-                      <span
-                        className={`inline-block text-center py-1 font-medium rounded-full text-xs w-[60px] ${
-                          city.active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {city.active ? "Active" : "Inactive"}
-                      </span>
+                      <StatusBadge active={city.active} />
                     </td>
-
                     <td className="p-3 flex gap-2 justify-self-end">
-                      <button
-                        className={`px- w-[76px] py-1  rounded border  text-xs transition ${
-                          city.active
-                            ? "border-gray-300 text-gray-700 hover:bg-gray-100"
-                            : "bg-gray-200 text-gray-500"
-                        }`}
+                      <ActionButton
                         onClick={() => handleToggleCityActive(idx)}
+                        className={
+                          city.active
+                            ? "text-gray-700 hover:bg-gray-100"
+                            : "bg-gray-200 text-gray-500"
+                        }
                       >
                         {city.active ? "Deactivate" : "Activate"}
-                      </button>
-
-                      <button
-                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
-                        onClick={() => handleEditCity(idx)}
-                      >
+                      </ActionButton>
+                      <ActionButton onClick={() => startCityEdit(idx)}>
                         Update
-                      </button>
-
-                      <button
-                        className="px-2 py-0.5  rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs  transition"
+                      </ActionButton>
+                      <ActionButton
                         onClick={() => {
                           setSelectedCityIdx(idx);
                           setSelectedDistrictIdx(null);
                         }}
                       >
-                         Districts
-                      </button>
-
-                      <button
-                        className="px-2 py-0.5 rounded border-red-300 border text-red-700 hover:bg-red-50 text-xs  transition"
+                        Districts
+                      </ActionButton>
+                      <ActionButton
                         onClick={() => handleDeleteCity(idx)}
+                        className="border-red-300 text-red-700 hover:bg-red-50"
                       >
                         Delete
-                      </button>
+                      </ActionButton>
                     </td>
                   </tr>
                 ))}
@@ -419,76 +649,44 @@ function Page() {
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="p-3 text-left font-normal">District</th>
-                  <th className="p-3 text-left font-normal ">Postal Codes</th>
-                  <th className="p-3 text-left font-normal ">Status</th>
+                  <th className="p-3 text-left font-normal">Postal Codes</th>
+                  <th className="p-3 text-left font-normal">Status</th>
                   <th className="p-3 text-left font-normal"></th>
                 </tr>
               </thead>
               <tbody>
                 {cities[selectedCityIdx].districts.map((district, idx) => (
                   <tr key={idx} className="border-b">
-                    <td className="p-3 ">{district.name}</td>
-                    <td className="p-3 ">
-                      {district.postalCodes.length}
+                    <td className="p-3">{district?.name}</td>
+                    <td className="p-3">
+                      {district?.postalCodes?.length || 0}
                     </td>
                     <td>
-                      <span
-                        className={`inline-block text-center w-[60px] py-1 rounded-full text-xs font-semibold ${
-                          district.active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {district.active ? "Active" : "Inactive"}
-                      </span>
+                      <StatusBadge active={district.active} />
                     </td>
-
                     <td className="p-3 flex gap-2 justify-end">
-                      <button
-                        className={`w-[76px] px-2 py-0.5 rounded   text-xs transition ${
+                      <ActionButton
+                        onClick={() => handleToggleDistrictActive(idx)}
+                        className={
                           district.active
-                            ? "border border-gray-300  text-gray-700 hover:bg-gray-100"
+                            ? "text-gray-700 hover:bg-gray-100"
                             : "bg-gray-200 text-gray-500"
-                        }`}
-                        onClick={() => {
-                          setCities((prev) =>
-                            prev.map((city, cIdx) =>
-                              cIdx === selectedCityIdx
-                                ? {
-                                    ...city,
-                                    districts: city.districts.map((d, dIdx) =>
-                                      dIdx === idx
-                                        ? { ...d, active: !d.active }
-                                        : d
-                                    ),
-                                  }
-                                : city
-                            )
-                          );
-                        }}
+                        }
                       >
                         {district.active ? "Deactivate" : "Activate"}
-                      </button>
-
-                      <button
-                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
-                        onClick={() => handleEditDistrict(idx)}
-                      >
+                      </ActionButton>
+                      <ActionButton onClick={() => startDistrictEdit(idx)}>
                         Update
-                      </button>
-
-                      <button
-                        className="px-2 py-0.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition"
-                        onClick={() => setSelectedDistrictIdx(idx)}
-                      >
+                      </ActionButton>
+                      <ActionButton onClick={() => setSelectedDistrictIdx(idx)}>
                         Postal Codes
-                      </button>
-                      <button
-                        className="px-2 py-0.5 rounded border-red-300 border text-red-700 hover:bg-red-50 text-xs  transition"
+                      </ActionButton>
+                      <ActionButton
                         onClick={() => handleDeleteDistrict(idx)}
+                        className="border-red-300 text-red-700 hover:bg-red-50"
                       >
                         Delete
-                      </button>
+                      </ActionButton>
                     </td>
                   </tr>
                 ))}
@@ -498,7 +696,7 @@ function Page() {
             // Postal Codes Table
             <table className="w-full bg-white rounded-xl shadow overflow-hidden">
               <thead>
-                <tr className="bg-gray-50 border-b ">
+                <tr className="bg-gray-50 border-b">
                   <th className="font-normal p-3 text-left">Postal Code</th>
                   <th className="font-normal p-3 text-left">Status</th>
                   <th className="font-normal p-3 text-left"></th>
@@ -511,68 +709,28 @@ function Page() {
                   <tr key={idx} className="border-b">
                     <td className="p-3 font-medium">{postal.code}</td>
                     <td>
-                      <span
-                        className={`inline-block w-[60px] text-center py-1 rounded-full text-xs font-semibold ${
-                          postal.active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {postal.active ? "Active" : "Inactive"}
-                      </span>
+                      <StatusBadge active={postal.active} />
                     </td>
-
                     <td className="p-3 flex gap-2 justify-end">
-                      <button
-                        className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs"
-                        onClick={() => handleEditPostal(idx)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="px-2 py-0.5 rounded bg-red-50 text-red-700 hover:bg-red-100 text-xs"
-                        onClick={() => handleDeletePostal(idx)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className={`w-[72px] py-0.5 rounded text-xs  transition ${
+                      <ActionButton
+                        onClick={() => handleTogglePostalActive(idx)}
+                        className={
                           postal.active
                             ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             : "bg-gray-200 text-gray-500"
-                        }`}
-                        onClick={() => {
-                          setCities((prev) =>
-                            prev.map((city, cIdx) =>
-                              cIdx === selectedCityIdx
-                                ? {
-                                    ...city,
-                                    districts: city.districts.map(
-                                      (district, dIdx) =>
-                                        dIdx === selectedDistrictIdx
-                                          ? {
-                                              ...district,
-                                              postalCodes:
-                                                district.postalCodes.map(
-                                                  (p, pIdx) =>
-                                                    pIdx === idx
-                                                      ? {
-                                                          ...p,
-                                                          active: !p.active,
-                                                        }
-                                                      : p
-                                                ),
-                                            }
-                                          : district
-                                    ),
-                                  }
-                                : city
-                            )
-                          );
-                        }}
+                        }
                       >
                         {postal.active ? "Deactivate" : "Activate"}
-                      </button>
+                      </ActionButton>
+                      <ActionButton onClick={() => startPostalEdit(idx)}>
+                        Update
+                      </ActionButton>
+                      <ActionButton
+                        onClick={() => handleDeletePostal(idx)}
+                        className="border-red-300 text-red-700 hover:bg-red-50"
+                      >
+                        Delete
+                      </ActionButton>
                     </td>
                   </tr>
                 ))}
@@ -580,358 +738,53 @@ function Page() {
             </table>
           )}
         </div>
-
         {/* Right Side Add/Update Form */}
         <div className="w-full md:w-[600px]">
           <div className="bg-white rounded-md shadow p-6">
-            {/* City Form */}
             {selectedCityIdx === null && (
-              <>
-                <h2 className="text-lg font-semibold mb-4 ">
-                  {editingCityIdx !== null ? "Update City" : "Add City"}
-                </h2>
-                <form onSubmit={handleCitySubmit} className="space-y-4">
-                  <div>
-                    <Label className="text-sm mb-1">City Name</Label>
-                    <Input
-                      name="city"
-                      value={cityForm.name}
-                      onChange={(e) =>
-                        setCityForm({ ...cityForm, name: e.target.value })
-                      }
-                      className="w-full  rounded px-3 py-2 "
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-sm mb-1">Districts</Label>
-                    <div className="flex flex-wrap gap-2 ">
-                      {cityForm.districts?.map((district, dIdx) => (
-                        <div
-                          key={dIdx}
-                          className="flex flex-col bg-gray-50 rounded p-2 mb-2 gap-3 "
-                        >
-                          <div className="flex items-start justify-between -mt-2">
-                            <span className="font-medium">{district.name}</span>
-                            <button
-                              type="button"
-                              className="text-red-500 hover:text-red-700 "
-                              onClick={() => {
-                                setCityForm((prev) => ({
-                                  ...prev,
-                                  districts: prev.districts.filter(
-                                    (_, i) => i !== dIdx
-                                  ),
-                                }));
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-
-                          {/* Postal Codes for this district */}
-                          <div className="flex flex-wrap gap-1 ">
-                            {district.postalCodes.map((pc, pIdx) => (
-                              <span
-                                key={pIdx}
-                                className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs flex items-center "
-                              >
-                                {pc.code}
-                                <button
-                                  type="button"
-                                  className="ml-1 text-secondary hover:text-red-500"
-                                  onClick={() => {
-                                    setCityForm((prev) => ({
-                                      ...prev,
-                                      districts: prev.districts.map((d, i) =>
-                                        i === dIdx
-                                          ? {
-                                              ...d,
-                                              postalCodes: d.postalCodes.filter(
-                                                (_, j) => j !== pIdx
-                                              ),
-                                            }
-                                          : d
-                                      ),
-                                    }));
-                                  }}
-                                >
-                                  ×
-                                </button>
-                              </span>
-                            ))}
-                            {/* Add postal code input */}
-                            <input
-                              type="text"
-                              placeholder="Add postal code"
-                              className="border rounded px-2 py-0.5 text-xs w-[105px] focus:outline-none   focus:border-secondary"
-                              value={district.newPostalCode || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setCityForm((prev) => ({
-                                  ...prev,
-                                  districts: prev.districts.map((d, i) =>
-                                    i === dIdx
-                                      ? { ...d, newPostalCode: val }
-                                      : d
-                                  ),
-                                }));
-                              }}
-                              onKeyDown={(e) => {
-                                if (
-                                  e.key === "Enter" &&
-                                  district.newPostalCode?.trim()
-                                ) {
-                                  e.preventDefault();
-                                  setCityForm((prev) => ({
-                                    ...prev,
-                                    districts: prev.districts.map((d, i) =>
-                                      i === dIdx
-                                        ? {
-                                            ...d,
-                                            postalCodes: [
-                                              ...d.postalCodes,
-                                              d.newPostalCode
-                                                ? {
-                                                    code: d.newPostalCode.trim(),
-                                                    active: true,
-                                                  }
-                                                : undefined,
-                                            ].filter(Boolean) as PostalCode[],
-                                            newPostalCode: "",
-                                          }
-                                        : d
-                                    ),
-                                  }));
-                                }
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Add district input */}
-                    <div className="flex gap-2 mt-">
-                      <Input
-                        type="text"
-                        placeholder="District name"
-                        value={cityForm.newDistrict || ""}
-                        onChange={(e) =>
-                          setCityForm((prev) => ({
-                            ...prev,
-                            newDistrict: e.target.value,
-                          }))
-                        }
-                        className="w-48 border rounded "
-                      />
-                      <Button
-                        type="button"
-                        variant={"submit"}
-                        className="h-auto bg-transparent text-black border hover:bg-transparent hover:border-gray-400"
-                        onClick={() => {
-                          if (!cityForm.newDistrict?.trim()) return;
-                          setCityForm((prev) => ({
-                            ...prev,
-                            districts: [
-                              ...(prev.districts || []),
-                              {
-                                name: prev.newDistrict.trim(),
-                                active: true, // <-- Add this line
-                                postalCodes: [],
-                                newPostalCode: "",
-                              },
-                            ],
-                            newDistrict: "",
-                          }));
-                        }}
-                      >
-                        Add District
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button type="submit" variant={"submit"} className="h-10">
-                      {editingCityIdx !== null ? "Update" : "Add"}
-                    </Button>
-                    {editingCityIdx !== null && (
-                      <Button
-                        type="button"
-                        variant={"cancel"}
-                        className="h-10"
-                        onClick={() => {
-                          setEditingCityIdx(null);
-                          setCityForm({
-                            name: "",
-                            districts: [],
-                            newDistrict: "",
-                          });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </>
+              <CityForm
+                form={cityForm}
+                onChange={setCityForm}
+                onSubmit={handleCitySubmit}
+                editing={editingCityIdx !== null}
+                onCancel={() => {
+                  setEditingCityIdx(null);
+                  setCityForm({ name: "", districts: [], newDistrict: "" });
+                }}
+                formLoading={formLoading}
+              />
             )}
-
-            {/* District Form */}
             {selectedCityIdx !== null && selectedDistrictIdx === null && (
-              <>
-                <h2 className="text-lg font-semibold mb-4 ">
-                  {editingDistrictIdx !== null
-                    ? "Update District"
-                    : "Add District"}
-                </h2>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!districtForm.name.trim()) return;
-
-                    // Add district with postal codes
-                    setCities((prev) =>
-                      prev.map((city, cIdx) =>
-                        cIdx === selectedCityIdx
-                          ? {
-                              ...city,
-                              districts: [
-                                ...city.districts,
-                                {
-                                  name: districtForm.name,
-                                  active: true,
-                                  postalCodes: districtPostalCodes.map(
-                                    (code) => ({ code, active: true })
-                                  ),
-                                },
-                              ],
-                            }
-                          : city
-                      )
-                    );
-                    setDistrictForm({ name: "" });
-                    setDistrictPostalCodes([]);
-                    setNewDistrictPostal("");
-                  }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <Label className="text-sm mb-1">District Name</Label>
-                    <Input
-                      name="district"
-                      value={districtForm.name}
-                      onChange={(e) =>
-                        setDistrictForm({ name: e.target.value })
-                      }
-                      className="w-full border rounded px-3 py-2 focus:border-secondary"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm mb-1">Postal Codes</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {districtPostalCodes.map((code, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs flex items-center"
-                        >
-                          {code}
-                          <button
-                            type="button"
-                            className="ml-1 text-secondary hover:text-red-500"
-                            onClick={() =>
-                              setDistrictPostalCodes((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              )
-                            }
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        type="text"
-                        placeholder="Add postal code"
-                        className="border rounded px-2 py-0.5 text-xs w-[105px] focus:outline-none focus:border-secondary"
-                        value={newDistrictPostal}
-                        onChange={(e) => setNewDistrictPostal(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && newDistrictPostal.trim()) {
-                            e.preventDefault();
-                            setDistrictPostalCodes((prev) => [
-                              ...prev,
-                              newDistrictPostal.trim(),
-                            ]);
-                            setNewDistrictPostal("");
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" variant={"submit"} className="h-10">
-                      {editingDistrictIdx !== null ? "Update" : "Add"}
-                    </Button>
-                    {editingDistrictIdx !== null && (
-                      <Button
-                        type="button"
-                        variant={"cancel"}
-                        className="h-10"
-                        onClick={() => {
-                          setEditingDistrictIdx(null);
-                          setDistrictForm({ name: "" });
-                          setDistrictPostalCodes([]);
-                          setNewDistrictPostal("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </>
+              <DistrictForm
+                form={districtForm}
+                onChange={setDistrictForm}
+                codes={districtPostalCodes}
+                setCodes={setDistrictPostalCodes}
+                newCode={newDistrictPostal}
+                setNewCode={setNewDistrictPostal}
+                onSubmit={handleDistrictSubmit}
+                editing={editingDistrictIdx !== null}
+                onCancel={() => {
+                  setEditingDistrictIdx(null);
+                  setDistrictForm({ name: "" });
+                  setDistrictPostalCodes([]);
+                  setNewDistrictPostal("");
+                }}
+                formLoading={formLoading}
+              />
             )}
-
-            {/* Postal Code Form */}
             {selectedCityIdx !== null && selectedDistrictIdx !== null && (
-              <>
-                <h2 className="text-lg font-semibold mb-4 ">
-                  {editingPostalIdx !== null
-                    ? "Update Postal Code"
-                    : "Add Postal Code"}
-                </h2>
-                <form onSubmit={handlePostalSubmit} className="space-y-4">
-                  <div>
-                    <Label className="text-sm mb-1">Postal Code</Label>
-                    <Input
-                      name="postal"
-                      value={postalForm.code}
-                      onChange={(e) => setPostalForm({ code: e.target.value })}
-                      className="w-full border rounded px-3 py-2 focus:border-secondary"
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" variant={"submit"} className="h-10">
-                      {editingPostalIdx !== null ? "Update" : "Add"}
-                    </Button>
-                    {editingPostalIdx !== null && (
-                      <Button
-                        type="button"
-                        variant={"cancel"}
-                        className="h-10"
-                        onClick={() => {
-                          setEditingPostalIdx(null);
-                          setPostalForm({ code: "" });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </>
+              <PostalCodeForm
+                form={postalForm}
+                onChange={setPostalForm}
+                onSubmit={handlePostalSubmit}
+                editing={editingPostalIdx !== null}
+                onCancel={() => {
+                  setEditingPostalIdx(null);
+                  setPostalForm({ code: "" });
+                }}
+                formLoading={formLoading}
+              />
             )}
           </div>
         </div>
