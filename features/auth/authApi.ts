@@ -31,7 +31,7 @@ export interface picture{
 }
 
 export const login = async (data: LoginPayload): Promise<userReturnRequest> => {
-  const response = await apiClient.post("/auth/login", data);
+  const response = await apiClient.post("/api/login", data);
   return response.data;
 };
 
