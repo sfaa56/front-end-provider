@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest, { params }) {
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { cityId: string } }) {
+export async function DELETE(req: NextRequest, { params }) {
   const cityId = params.cityId;
   const sessionCookie = req.cookies.get('session')?.value;
 

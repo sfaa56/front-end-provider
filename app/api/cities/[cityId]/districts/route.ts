@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest, { params }: { params: { cityId: string } }) {
+export async function POST(req: NextRequest,{ params }) {
   const { cityId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
