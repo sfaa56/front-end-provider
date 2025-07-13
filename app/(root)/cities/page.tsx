@@ -8,6 +8,7 @@ import DistrictForm from "@/components/cities/DistrictForm";
 import PostalCodeForm from "@/components/cities/PostalCodeForm";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import axios from "axios";
 
 interface districtFormProps {
   name: string;
@@ -77,17 +78,21 @@ function Page() {
       if (editingCityIdx !== null) {
         // Update existing city
         const cityId = cities[editingCityIdx]._id;
-        const response = await apiClient.put(`/cities/${cityId}`, {
-          name: cityForm.name,
-          districts: cityForm.districts.map((d) => ({
-            name: d.name,
-            active: true,
-            postalCodes: d.postalCodes.map((code) => ({
-              code: code.code,
+        const response = await axios.put(
+          `/api/cities/${cityId}`,
+          {
+            name: cityForm.name,
+            districts: cityForm.districts.map((d) => ({
+              name: d.name,
               active: true,
+              postalCodes: d.postalCodes.map((code) => ({
+                code: code.code,
+                active: true,
+              })),
             })),
-          })),
-        });
+          },
+          { withCredentials: true }
+        );
         if (response.status === 200) {
           setCities((prev) =>
             prev.map((c, idx) =>
@@ -178,7 +183,8 @@ function Page() {
 
     setFormLoading(true);
     const cityId = cities[selectedCityIdx]._id;
-    const districtId = cities[selectedCityIdx].districts[editingDistrictIdx || 0]?._id;
+    const districtId =
+      cities[selectedCityIdx].districts[editingDistrictIdx || 0]?._id;
     try {
       if (editingDistrictIdx !== null) {
         // Update existing district
@@ -293,12 +299,11 @@ function Page() {
     setDistrictForm({ name: "" });
     setDistrictPostalCodes([]);
     setNewDistrictPostal("");
-
   };
 
   const handleToggleDistrictActive = async (idx: number) => {
     if (selectedCityIdx === null) return;
-    
+
     const cityId = cities[selectedCityIdx]._id;
     const district = cities[selectedCityIdx].districts[idx];
     const districtId = cities[selectedCityIdx].districts[idx || 0]?._id;
@@ -332,7 +337,6 @@ function Page() {
     } catch (error) {
       toast.error("Error toggling district status");
     }
-    
   };
 
   // Postal codes
@@ -350,11 +354,10 @@ function Page() {
     const districtIdx = selectedDistrictIdx;
     const districtId =
       cities[selectedCityIdx].districts[selectedDistrictIdx]?._id;
-    const postalCodeId = 
+    const postalCodeId =
       cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[
         editingPostalIdx || 0
       ]?._id;
-
 
     try {
       if (editingPostalIdx !== null) {
@@ -449,7 +452,8 @@ function Page() {
     const districtId =
       cities[selectedCityIdx].districts[selectedDistrictIdx]?._id;
     const postalId =
-      cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[idx]?._id;
+      cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[idx]
+        ?._id;
 
     try {
       const response = await apiClient.delete(
