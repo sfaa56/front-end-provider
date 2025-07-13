@@ -34,11 +34,11 @@ const regionCityData = [
   { region: "Giza", cities: ["Dokki", "Mohandessin", "Haram"] },
 ];
 
-const ROLES = ["Admin", "Provider", "Client"] as const;
+const ROLES = ["admin", "provider", "client"] as const;
 
 const formSchema = z
   .object({
-    username: z.string().min(2, "First Name must be at least 2 characters."),
+    name: z.string().min(2, "First Name must be at least 2 characters."),
     email: z.string().email("Please enter a valid email."),
     phoneNumber: z
       .string()
@@ -46,8 +46,9 @@ const formSchema = z
         /^\d{10,15}$/,
         "Please enter a valid phone number (10-15 digits)."
       ),
-    address: z.string().optional(),
-    specialty: z.string().optional(),
+  
+    specialty: z.string().min(1, "Please select a specialty"),
+    SubSpecialty: z.string().min(1, "Please select a sub-specialtie"),
     image: z.any().optional(),
     file: z.string().optional(),
 
@@ -57,7 +58,7 @@ const formSchema = z
     confirmPassword: z.string().min(6, "Please confirm your password."),
     isVerified: z.boolean().optional(),
 
-    region: z.string().min(1, "Please select a region."),
+ 
     district: z.string().min(1, "Please select a district."),
     postalCode: z.string().min(1, "Please select a postal code."),
   })
@@ -67,7 +68,7 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      if (data.role !== "Provider") {
+      if (data.role !== "provider") {
         return data.isVerified === undefined;
       }
       return true;
@@ -83,33 +84,39 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AddUserPage() {
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<any[]>([]);
+  const [specialties, setSpecialties] = useState<any[]>([]);
   const [imageFile, setImageFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-    
-const CLOUDINARY_UPLOAD_PRESET = "userPic"; 
-const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0"; 
-  
+  const CLOUDINARY_UPLOAD_PRESET = "userPic";
+  const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      role: "Client",
-      region: "",
+      role: "client",
+    
       city: "",
     },
   });
 
-  const region = form.watch("region");
+  const city = form.watch("city");
   const district = form.watch("district");
 
-  const cityObj = cities.find((c) => c.name === region);
+  const Specialty = form.watch("specialty");
+
+  // for filter specialties
+  const specialtyObject = specialties.find((c) => c.name === Specialty);
+  const subSpecialties = specialtyObject?.subSpecialties || [];
+
+  // for filter cities
+  const cityObj = cities.find((c) => c.name === city);
   const districts = cityObj?.districts || [];
   const districtObj = districts.find((d) => d.name === district);
   const postalCodes = districtObj?.postalCodes || [];
 
   const role = form.watch("role");
-  const cityOptions = cities.find((r) => r.region === region)?.cities || [];
+  const cityOptions = cities.find((r) => r.region === city)?.cities || [];
 
   const handleImageChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -143,34 +150,23 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
     fetchCities();
   }, []);
 
-  // When region changes, reset district and postalCode
+  // fetch specialty
   useEffect(() => {
-    if (cityObj && cityObj.districts.length > 0) {
-      form.setValue("district", cityObj.districts[0].name);
-      console.log("hereeee");
-      if (cityObj.districts[0].postalCodes.length > 0) {
-        console.log("next hereeee");
-        form.setValue("postalCode", cityObj.districts[0].postalCodes[0].code);
-      } else {
-        console.log("therd hereeee");
-        form.setValue("postalCode", "");
+    const fetchSpecialty = async () => {
+      try {
+        const response = await apiClient("/specialties");
+        if (response.status === 200) {
+          setSpecialties(response.data);
+          // Assuming you want to set the specialty options in the form
+          // form.setValue("specialty", response.data[0]?.name || "");
+        }
+      } catch {
+        toast.error("Error fetching specialties");
       }
-    } else {
-      form.setValue("district", "");
-      form.setValue("postalCode", "");
-    }
-    // eslint-disable-next-line
-  }, [region]);
+    };
+    fetchSpecialty();
+  }, []);
 
-  // When district changes, reset postalCode
-  useEffect(() => {
-    if (districtObj && districtObj.postalCodes.length > 0) {
-      form.setValue("postalCode", districtObj.postalCodes[0].code);
-    } else {
-      form.setValue("postalCode", "");
-    }
-    // eslint-disable-next-line
-  }, [district]);
 
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
@@ -190,9 +186,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
           onUploadProgress: (progressEvent) => {
             const total = progressEvent.total ?? 0;
             if (total > 0) {
-              const percent = Math.round(
-                (progressEvent.loaded * 100) / total
-              );
+              const percent = Math.round((progressEvent.loaded * 100) / total);
               setUploadProgress(percent);
             } else {
               setUploadProgress(0);
@@ -201,22 +195,29 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
         }
       );
 
-
-      const imageUrl = res.data.secure_url;
+      const url = res.data.secure_url;
       const publicId = res.data.public_id;
 
+    const image ={
+        url,
+        publicId,
+    }
 
-      const userData = {
+      const { specialty, confirmPassword , district , ...userData } = {
         ...values,
-        image: imageUrl,
-        file: publicId,
+            image
       };
+
+
 
       const response = await apiClient.post("/auth/register", userData);
 
       if (response.status !== 201) {
         throw new Error("Failed to add user");
       }
+
+      // Reset form after successful submission
+      form.reset();
 
       // API request here
       toast("User added successfully!");
@@ -227,11 +228,12 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
     }
   };
 
+  console.log("reRender", form.watch());
+ 
+
   return (
     <Form {...form}>
-      {loading ? (
-        <span>Loading...</span>
-      ) : (
+   
         <div className="mx-[20px]">
           <nav
             className="flex items-center text-sm text-gray-500 mb-6"
@@ -251,65 +253,67 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
           >
             {/* Image upload */}
             <div className="col-span-2 w-40">
-<FormField
-  control={form.control}
-  name="image"
-  render={() => (
-    <FormItem>
-      <FormControl>
-        <div>
-          <input
-            id="imageUpload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageChange}
-          />
-          <label
-            htmlFor="imageUpload"
-            className="flex items-center justify-center border-2 border-dashed border-gray-400 rounded-2xl p-5 w-full hover:shadow-md cursor-pointer text-center"
-          >
-            <div className="flex text-md flex-col items-center justify-center space-y-2">
-              {imageFile ? (
-                <>
-                  <img
-                    src={URL.createObjectURL(imageFile)}
-                    alt="Preview"
-                    className="w-40 h-20 object-cover rounde mb-2"
-                  />
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <span className="text-xs text-gray-500">{uploadProgress}%</span>
-                  )}
-                  {uploadProgress === 100 && (
-                    <span className="text-xs text-green-600">Uploaded!</span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <FiUpload className="text-gray-600 text-xl" />
-                  <p className="text-gray-600 font-medium">
-                    Upload <br /> Image
-                  </p>
-                </>
-              )}
+              <FormField
+                control={form.control}
+                name="image"
+                render={() => (
+                  <FormItem>
+                    <FormControl>
+                      <div>
+                        <input
+                          id="imageUpload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageChange}
+                        />
+                        <label
+                          htmlFor="imageUpload"
+                          className="flex items-center justify-center border-2 border-dashed border-gray-400 rounded-2xl p-5 w-full hover:shadow-md cursor-pointer text-center"
+                        >
+                          <div className="flex text-md flex-col items-center justify-center space-y-2">
+                            {imageFile ? (
+                              <>
+                                <img
+                                  src={URL.createObjectURL(imageFile)}
+                                  alt="Preview"
+                                  className="w-40 h-20 object-cover rounde mb-2"
+                                />
+                                {uploadProgress > 0 && uploadProgress < 100 && (
+                                  <span className="text-xs text-gray-500">
+                                    {uploadProgress}%
+                                  </span>
+                                )}
+                                {uploadProgress === 100 && (
+                                  <span className="text-xs text-green-600">
+                                    Uploaded!
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <FiUpload className="text-gray-600 text-xl" />
+                                <p className="text-gray-600 font-medium">
+                                  Upload <br /> Image
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </label>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </label>
-        </div>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-            </div>
-
-
 
             {/* Form fields */}
             <div className="col-span-2 grid gap-6 lg:grid-cols-2">
-              {/* Username */}
+              {/* name */}
               <FormField
                 control={form.control}
-                name="username"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>User Name</FormLabel>
@@ -346,7 +350,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
                         value={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
-                          if (value !== "Provider")
+                          if (value !== "provider")
                             form.setValue("isVerified", undefined);
                         }}
                       >
@@ -374,26 +378,58 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
                   <FormItem>
                     <FormLabel>Specialty</FormLabel>
                     <FormControl>
-                      <Input placeholder="Specialty" {...field} />
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="gap-4">
+                          <SelectValue placeholder="Specialty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {specialties.map((s) => (
+                            <SelectItem key={s._id} value={s.name}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              {/* Address */}
+
+              {/* sub-Specialties */}
               <FormField
                 control={form.control}
-                name="address"
+                name="SubSpecialty"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel>Specialty</FormLabel>
                     <FormControl>
-                      <Input placeholder="Address" {...field} />
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                        disabled={subSpecialties.length === 0}
+                      >
+                        <SelectTrigger className="gap-4">
+                          <SelectValue placeholder="sub-Specialty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {subSpecialties.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+    
               {/* Email */}
               <FormField
                 control={form.control}
@@ -411,7 +447,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
               {/* Region */}
               <FormField
                 control={form.control}
-                name="region"
+                name="city"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>City</FormLabel>
@@ -436,7 +472,6 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
                   </FormItem>
                 )}
               />
-
               {/* District */}
               <FormField
                 control={form.control}
@@ -476,7 +511,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
                     <FormLabel>Postal Code</FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value ?? "Select Postal Code"}
+                        value={field.value ?? ""}
                         onValueChange={field.onChange}
                         disabled={districts.length === 0}
                       >
@@ -485,7 +520,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
                         </SelectTrigger>
                         <SelectContent>
                           {postalCodes.map((p) => (
-                            <SelectItem key={p._id || p.code} value={p.code}>
+                            <SelectItem key={p._id} value={p._id}>
                               {p.code}
                             </SelectItem>
                           ))}
@@ -535,7 +570,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
               />
             </div>
             {/* Provider approval (only if Provider) */}
-            {role === "Provider" && (
+            {role === "provider" && (
               <FormField
                 control={form.control}
                 name="isVerified"
@@ -566,7 +601,7 @@ const CLOUDINARY_CLOUD_NAME = "dxhgmrvi0";
             </Button>
           </form>
         </div>
-      )}
+      
     </Form>
   );
 }

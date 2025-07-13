@@ -18,13 +18,15 @@ export async function POST(req: Request) {
 
   const response = NextResponse.json(data, { status: backendRes.status });
 
-  if (backendSetCookie) {
-    // Set cookie for frontend domain (strip backend domain if present)
-    response.headers.set(
-      'Set-Cookie',
-      backendSetCookie.replace(/Domain=[^;]+;/, 'Domain=;')
-    );
-  }
+if (backendSetCookie) {
+  // Always set SameSite=None; Secure for cross-origin
+  const fixedCookie = backendSetCookie
+    .replace(/Domain=[^;]+;/, '') // Remove domain
+    .replace(/SameSite=[^;]+;/, 'SameSite=None;') // Ensure None
+    .replace(/Secure/, 'Secure'); // Make sure secure is present
+
+  response.headers.set('Set-Cookie', fixedCookie);
+}
 
   return response;
 }

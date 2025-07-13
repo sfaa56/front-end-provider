@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createSession, deleteSession } from "@/lib/session";
+
 
 import { User } from "@/types/user";
 import * as authApi from "./authApi";
-import { handleLogin, handleLogout } from "@/lib/actions/auth";
+
 
 interface AuthState {
   user: User | null;

@@ -7,7 +7,7 @@ import { FiEye, FiEdit, FiDelete, FiTrash2 } from "react-icons/fi";
 
 import Link from "next/link";
 import RejectForm from "@/components/users/rejectForm";
-import { deleteUser, handleApprove } from "@/features/user/useSlice";
+import { deleteUser, approveUser } from "@/features/user/useSlice";
 import { IoMdCheckmark } from "react-icons/io";
 import {
   AlertDialog,
@@ -20,21 +20,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "@/store/store";
 
 // This type is used to define the shape of our data.
 export type User = {
   _id?: string;
-  img: {
+  image: {
     url: string;
   };
-  username: string;
+  name: string;
   email: string;
-
   phoneNumber: string;
-
   role: string;
-  status: string;
-  specialty?: string; // 👈 Add this
+  isActive: boolean;
+  SubSpecialty?: { name: string }; // 👈 Add this
   isVerified?: boolean;
 };
 
@@ -49,6 +50,24 @@ export const getColumns = (
   roleFilter?: string,
   VerifiedFilter?: boolean
 ): ColumnDef<User>[] => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handelApproveUser = async (userId: string) => {
+    try {
+      const resultAction = await dispatch(approveUser(userId));
+
+      if (approveUser.fulfilled.match(resultAction)) {
+        toast.success("User approved successfully");
+      } else {
+        console.error("Failed to approve user:", resultAction.error.message);
+        toast.error("Failed to approve user");
+      }
+    } catch (error) {
+      console.error("Error approving user:", error);
+      toast.error("Failed to approve user");
+    }
+  };
+
   console.log("ttt", VerifiedFilter);
   const columns: ColumnDef<User>[] = [
     {
@@ -57,14 +76,14 @@ export const getColumns = (
       cell: ({ row }) => (
         <div className="flex items-center">
           <img
-            src={row.original.img.url}
-            alt={`Image of ${row.original.username}`}
+            src={row.original.image.url}
+            alt={`Image of ${row.original.name}`}
             className="w-12 h-12 rounded-[100%] object-cover"
           />
         </div>
       ),
     },
-    { accessorKey: "username", header: "Name" },
+    { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     { accessorKey: "phoneNumber", header: "Phone" },
     {
@@ -72,28 +91,28 @@ export const getColumns = (
       header: "Role",
       cell: ({ row }) => {
         const role = row.original.role;
-        const status = row.original.status;
+        const status = row.original.isActive;
         const roleClass =
-          role === "agency" && status === "not_verified" ? "text-red-500" : "";
+          role === "agency" && status === false ? "text-red-500" : "";
         return <div className={roleClass}>{role}</div>;
       },
     },
     {
-      accessorKey: "status",
+      accessorKey: "isActive",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status;
+        const status = row.original.isActive;
         return (
           <span
             className={`px-3 py-1 rounded-full text-xs font-semibold
           ${
-            status === "Active"
+            status === true
               ? "bg-green-100 text-green-700"
               : "bg-red-200 text-red-600"
           }
         `}
           >
-            {status}
+            {status ? "Active" : "Inactive"}
           </span>
         );
       },
@@ -109,8 +128,12 @@ export const getColumns = (
   // ✅ Add specialty column only for Provider
   if (roleFilter === "Provider" || VerifiedFilter === false) {
     columns.splice(5, 0, {
-      accessorKey: "specialty",
+      accessorKey: "SubSpecialty",
       header: "Specialty",
+      cell: ({ row }) => {
+        const specialty = row.original.SubSpecialty?.name || "N/A";
+        return <span className="text-gray-600">{specialty}</span>;
+      },
     });
   }
 
@@ -133,7 +156,7 @@ export const getColumns = (
           <div className="w-px h-4 bg-gray-300"></div>
 
           <button
-            onClick={() => handleApprove(user._id ?? "")}
+            onClick={() => handelApproveUser(user._id ?? "")}
             className="text-green-500 hover:cursor-pointer flex items-center gap-1 accept"
           >
             <IoMdCheckmark /> Accept
@@ -146,17 +169,18 @@ export const getColumns = (
       ) : (
         <div className="text-center gap-2">
           <Link href={"users/view/555"}>
-          <button
-            title="View User"
-            className="p-2 rounded hover:bg-gray-100 text-blue-600"
-            onClick={() => {
-              /* handle view user logic here */
-            }}
-          >
-            <FiEye />
-          </button></Link>
+            <button
+              title="View User"
+              className="p-2 rounded hover:bg-gray-100 text-blue-600"
+              onClick={() => {
+                /* handle view user logic here */
+              }}
+            >
+              <FiEye />
+            </button>
+          </Link>
 
-          <Link href={"users/update/555"}>
+          <Link href={`users/update/${user._id}`}>
             <button
               title="Update User"
               className="p-2 rounded hover:bg-gray-100 text-green-600"
@@ -192,7 +216,7 @@ export const getColumns = (
               <AlertDialogDescription className="text-center text-gray-600 mb-4">
                 Are you sure you want to{" "}
                 <span className="font-semibold text-red-500">delete</span> user{" "}
-                <span className="font-semibold">{user.username}</span>?<br />
+                <span className="font-semibold">{user.name}</span>?<br />
                 This action cannot be undone.
               </AlertDialogDescription>
               <AlertDialogFooter className="flex justify-center gap-2">
@@ -207,7 +231,7 @@ export const getColumns = (
                 <AlertDialogAction
                   onClick={(event) => {
                     event.stopPropagation();
-                    deleteUser();
+                    deleteUser("1232");
                   }}
                   className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
                 >
