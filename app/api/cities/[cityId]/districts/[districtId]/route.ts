@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
   req: NextRequest,
-  context: { params: Record<string, string> }
+{ params }
 ) {
-  const { cityId, districtId } = context.params;
+  const { cityId, districtId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
