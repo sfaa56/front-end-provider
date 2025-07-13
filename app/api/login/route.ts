@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const backendRes = await fetch(
-    'https://provider-jmy5sd3gc-yusefs-projects-b3490cde.vercel.app/api/auth/login',
+    'https://provider-mauve.vercel.app/api/auth/login',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
