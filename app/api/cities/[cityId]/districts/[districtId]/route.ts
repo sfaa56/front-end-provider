@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { cityId: string; districtId: string } }
+) {
   const { cityId, districtId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
@@ -10,7 +13,7 @@ export async function PUT(req: NextRequest, { params }: { params: { cityId: stri
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...(sessionCookie ? { 'Cookie': `session=${sessionCookie}` } : {}),
+        ...(sessionCookie ? { Cookie: `session=${sessionCookie}` } : {}),
       },
       body: await req.text(),
     }
@@ -20,7 +23,10 @@ export async function PUT(req: NextRequest, { params }: { params: { cityId: stri
   return NextResponse.json(data, { status: backendRes.status });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { cityId: string; districtId: string } }
+) {
   const { cityId, districtId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
@@ -29,7 +35,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { cityId: s
     {
       method: 'DELETE',
       headers: {
-        ...(sessionCookie ? { 'Cookie': `session=${sessionCookie}` } : {}),
+        ...(sessionCookie ? { Cookie: `session=${sessionCookie}` } : {}),
       },
     }
   );
