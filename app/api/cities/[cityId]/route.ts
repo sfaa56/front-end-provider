@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(req: NextRequest, { params }) {
-  const cityId = params.id;
+  const cityId = params.cityId;
   // Forward the session cookie
   const sessionCookie = req.cookies.get('session')?.value;
 
@@ -22,8 +22,8 @@ export async function PUT(req: NextRequest, { params }) {
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const cityId = params.id;
+export async function DELETE(req: NextRequest, { params }: { params: { cityId: string } }) {
+  const cityId = params.cityId;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
