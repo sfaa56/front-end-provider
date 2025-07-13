@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
-  const { cityId, districtId } = params;
+export async function PUT(req: NextRequest, context: { params: { cityId: string, districtId: string } }) {
+  const { cityId, districtId } = context.params;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
@@ -20,8 +20,8 @@ export async function PUT(req: NextRequest, { params }: { params: { cityId: stri
   return NextResponse.json(data, { status: backendRes.status });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
-  const { cityId, districtId } = params;
+export async function DELETE(req: NextRequest, context: { params: { cityId: string, districtId: string } }) {
+  const { cityId, districtId } = context.params;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
