@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api";
 import { User } from "../../types/user";
+import axios from "axios";
 
 
 export interface LoginPayload {
@@ -32,7 +33,9 @@ export interface picture{
 }
 
 export const login = async (data: LoginPayload): Promise<userReturnRequest> => {
-   const response = await apiClient.post('/api/login', data, { withCredentials: true });
+  //  const response = await apiClient.post('/auth/login', data, { withCredentials: true });
+   const response = await axios.post('/api/login', data, { withCredentials: true });
+
   return response.data;
 };
 
