@@ -146,7 +146,7 @@ function Page() {
   const handleDeleteCity = async (idx: number) => {
     try {
       const CityId = cities[idx]._id;
-      const response = await apiClient.delete(`/cities/${CityId}`);
+      const response = await axios.delete(`/api/cities/${CityId}`, { withCredentials: true });
       if (response.status === 200) {
         setCities((prev) => prev.filter((_, i) => i !== idx));
         toast.success("City deleted successfully");
@@ -190,8 +190,8 @@ function Page() {
     try {
       if (editingDistrictIdx !== null) {
         // Update existing district
-        const response = await apiClient.put(
-          `/cities/${cityId}/districts/${districtId}`,
+        const response = await axios.put(
+          `/api/cities/${cityId}/districts/${districtId}`,
           {
             name: districtForm.name,
             active: true,
@@ -199,7 +199,8 @@ function Page() {
               code,
               active: true,
             })),
-          }
+          },
+          {withCredentials:true}
         );
         if (response.status === 201) {
           setCities((prev) =>
@@ -228,14 +229,16 @@ function Page() {
         }
       } else {
         // Add new district
-        const response = await apiClient.post(`/cities/${cityId}/districts`, {
+        const response = await axios.post(`/api/cities/${cityId}/districts`, {
           name: districtForm.name,
           active: true,
           postalCodes: districtPostalCodes.map((code) => ({
             code,
             active: true,
           })),
-        });
+        },
+      {withCredentials:true}
+      );
         if (response.status === 201) {
           setCities((prev) =>
             prev.map((city, cIdx) =>
@@ -278,8 +281,8 @@ function Page() {
     const cityId = cities[selectedCityIdx]._id;
     const districtId = cities[selectedCityIdx].districts[idx]._id;
     try {
-      const response = await apiClient.delete(
-        `/cities/${cityId}/districts/${districtId}`
+      const response = await axios.delete(
+        `/api/cities/${cityId}/districts/${districtId}`,{withCredentials:true}
       );
       if (response.status === 200) {
         setCities((prev) =>
@@ -311,13 +314,14 @@ function Page() {
     const districtId = cities[selectedCityIdx].districts[idx || 0]?._id;
 
     try {
-      const response = await apiClient.put(
-        `/cities/${cityId}/districts/${districtId}`,
+      const response = await axios.put(
+        `/api/cities/${cityId}/districts/${districtId}`,
         {
           name: district.name,
           active: !district.active,
           postalCodes: district.postalCodes,
-        }
+        },
+        {withCredentials:true}
       );
       if (response.status === 201) {
         setCities((prev) =>
@@ -364,12 +368,12 @@ function Page() {
     try {
       if (editingPostalIdx !== null) {
         // Update postal code
-        const response = await apiClient.put(
-          `/cities/${cityId}/districts/${districtId}/postalCodes/${postalCodeId}`,
+        const response = await axios.put(
+          `/api/cities/${cityId}/districts/${districtId}/postalCodes/${postalCodeId}`,
           {
             code: postalForm.code,
             active: true,
-          }
+          },{withCredentials:true}
         );
         if (response.status === 200) {
           setCities((prev) =>
@@ -398,12 +402,13 @@ function Page() {
         setEditingPostalIdx(null);
       } else {
         // Add new postal code
-        const response = await apiClient.post(
-          `/cities/${cityId}/districts/${districtId}/postalCodes`,
+        const response = await axios.post(
+          `/api/cities/${cityId}/districts/${districtId}/postalCodes`,
           {
             code: postalForm.code,
             active: true,
-          }
+          },
+          {withCredentials:true}
         );
         if (response.status === 201) {
           setCities((prev) =>
@@ -458,8 +463,8 @@ function Page() {
         ?._id;
 
     try {
-      const response = await apiClient.delete(
-        `/cities/${cityId}/districts/${districtId}/postalCodes/${postalId}`
+      const response = await axios.delete(
+        `/api/cities/${cityId}/districts/${districtId}/postalCodes/${postalId}`
       );
       if (response.status === 200) {
         setCities((prev) =>

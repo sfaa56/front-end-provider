@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(req: NextRequest, { params }) {
-  const cityId = params.id;
-  // Forward the session cookie
+export async function PUT(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
+  const { cityId, districtId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
-    `https://provider-mauve.vercel.app/api/cities/${cityId}`,
+    `https://provider-mauve.vercel.app/api/cities/${cityId}/districts/${districtId}`,
     {
       method: 'PUT',
       headers: {
@@ -21,13 +20,12 @@ export async function PUT(req: NextRequest, { params }) {
   return NextResponse.json(data, { status: backendRes.status });
 }
 
-
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const cityId = params.id;
+export async function DELETE(req: NextRequest, { params }: { params: { cityId: string, districtId: string } }) {
+  const { cityId, districtId } = params;
   const sessionCookie = req.cookies.get('session')?.value;
 
   const backendRes = await fetch(
-    `https://provider-mauve.vercel.app/api/cities/${cityId}`,
+    `https://provider-mauve.vercel.app/api/cities/${cityId}/districts/${districtId}`,
     {
       method: 'DELETE',
       headers: {
