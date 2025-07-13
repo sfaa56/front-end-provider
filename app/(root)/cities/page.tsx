@@ -105,7 +105,7 @@ function Page() {
         }
       } else {
         // Add new city
-        const response = await apiClient.post("/cities", {
+        const response = await axios.post("/cities", {
           name: cityForm.name,
           districts: cityForm.districts.map((d) => ({
             name: d.name,
@@ -115,7 +115,9 @@ function Page() {
               active: true,
             })),
           })),
-        });
+        },
+      {withCredentials:true}
+      );
         if (response.status === 201) {
           setCities((prev) => [...prev, response.data]);
           toast.success("City added successfully");
