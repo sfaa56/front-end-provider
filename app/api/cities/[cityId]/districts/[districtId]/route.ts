@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string; districtId: string } }
+  context: { params: { cityId: string; districtId: string } }
 ) {
-  const cityId = context.params.id;
+  const cityId = context.params.cityId;
   const districtId = context.params.districtId;
   const sessionCookie = req.cookies.get('session')?.value;
 
@@ -26,9 +26,9 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string; districtId: string } }
+  context: { params: { cityId: string; districtId: string } }
 ) {
-  const cityId = context.params.id;
+  const cityId = context.params.cityId;
   const districtId = context.params.districtId;
   const sessionCookie = req.cookies.get('session')?.value;
 
