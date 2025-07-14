@@ -28,7 +28,7 @@ import { AppDispatch } from "@/store/store";
 export type User = {
   _id?: string;
   image: {
-    url: string;
+    url?: string;
   };
   name: string;
   email: string;
@@ -76,7 +76,7 @@ export const getColumns = (
       cell: ({ row }) => (
         <div className="flex items-center">
           <img
-            src={row.original.image.url}
+            src={row.original?.image?.url}
             alt={`Image of ${row.original.name}`}
             className="w-12 h-12 rounded-[100%] object-cover"
           />
