@@ -14,5 +14,16 @@ export async function POST(req: NextRequest) {
     }
   );
   const data = await backendRes.json();
-  return NextResponse.json(data, { status: backendRes.status });
+
+  // Create response
+  const response = NextResponse.json(data, { status: backendRes.status });
+
+  // Remove the session cookie (set to expired)
+  response.headers.set(
+    'Set-Cookie',
+    // Adjust domain/path if needed
+    `session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure`
+  );
+
+  return response;
 }
