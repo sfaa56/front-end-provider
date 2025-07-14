@@ -109,9 +109,11 @@ function Page() {
     if (editingId) {
       // UPDATE
       try {
-        const res = await apiClient.put(
-          `/specialties/update/${editingId}`,
-          payload
+        const res = await axios.put(
+          `/api/specialties/update/${editingId}`,
+          payload,{
+            withCredentials:true
+          }
         );
 
         if (res.status === 200) {
@@ -138,7 +140,7 @@ function Page() {
       console.log("hhhhhhhh");
       // ADD
       try {
-        const res = await apiClient.post("/specialties/create", payload);
+        const res = await axios.post("/api/specialties/create", payload,{withCredentials:true});
         setSpecialties((prev) => [...prev, res.data]);
       } catch (err) {
         console.log("error", err);
@@ -161,7 +163,7 @@ function Page() {
   // Handle delete
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/specialties/delete/${id}`);
+      await axios.delete(`/api/specialties/delete/${id}`,{withCredentials:true});
       setSpecialties((prev) => prev.filter((sp) => sp._id !== id));
       if (editingId === id) {
         setEditingId(null);
