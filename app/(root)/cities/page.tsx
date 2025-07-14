@@ -162,7 +162,7 @@ function Page() {
     try {
       const cityId = cities[idx]._id;
       const city = cities[idx];
-      const response = await apiClient.put(`/cities/${cityId}`, {
+      const response = await axios.put(`/api/cities/${cityId}`, {
         name: city.name,
         active: !city.active,
         districts: city.districts,
@@ -502,12 +502,12 @@ function Page() {
     const postal =
       cities[selectedCityIdx].districts[selectedDistrictIdx].postalCodes[idx];
     try {
-      const response = await apiClient.put(
-        `/cities/${cityId}/districts/${districtIdx}/postalCodes/${idx}`,
+      const response = await axios.put(
+        `/api/cities/${cityId}/districts/${districtIdx}/postalCodes/${idx}`,
         {
           code: postal.code,
           active: !postal.active,
-        }
+        },{withCredentials:true}
       );
       if (response.status === 200) {
         setCities((prev) =>
