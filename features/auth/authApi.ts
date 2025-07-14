@@ -40,21 +40,21 @@ export const login = async (data: LoginPayload): Promise<userReturnRequest> => {
 };
 
 export const logout = async ()=>{
-  await apiClient.post("/auth/logout",{});
+  await axios.post("/api/auth/logout",{});
 }
 
 export const update = async (data: UpdatePayload): Promise<User> => {
-  const response = await apiClient.put(`/users/${data._id}`, data);
+  const response = await axios.put(`/api/users/${data._id}`, data,{ withCredentials: true });
   return response.data;
 }
 
 export const changePassword = async (data:changePasswordPayload):Promise<string>=>{
-  const response = await apiClient.put("/auth/password",data)
+  const response = await axios.put("/api/auth/password",data)
   console.log("response in authApi",response.data)
   return response.data
 }
 
 export const picture = async (data:picture):Promise<User>=>{
-  const response = await apiClient.put("/users/picture/upload",data);
+  const response = await axios.put("/api/users/picture/upload",data);
   return response.data.user
 }
