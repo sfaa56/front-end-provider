@@ -1,17 +1,18 @@
 import { apiClient } from "@/lib/api";
+import axios from "axios";
 
 export const fetchUsers = async (page: number, limit: number) => {
-  const response = await apiClient.get(`/users?page=${page}&limit=${limit}`);
+  const response = await axios.get(`/users?page=${page}&limit=${limit}`,{withCredentials:true});
   return response.data;
 }
 
 export const deleteUser = async (userId: string) => {
-  const response = await apiClient.delete(`/users/${userId}`);
+  const response = await axios.delete(`/users/${userId}`, { withCredentials: true });
   return response.data;
 }
 
 export const approveUser = async (userId: string) => {
-  const response = await apiClient.put(`/admin/approve-provider/${userId}`);
+  const response = await axios.put(`/admin/approve-provider/${userId}`,  { withCredentials: true });
   return response.data;
 }
 
@@ -34,7 +35,7 @@ export const getUserById = async (userId: string) => {
 }
 
 export const updateUser = async (userId: string, userData: any) => {
-  const response = await apiClient.put(`/users/${userId}`, userData);
+  const response = await axios.put(`/users/${userId}`, userData, { withCredentials: true });
   return response.data;
 }
 
